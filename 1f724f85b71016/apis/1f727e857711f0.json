@@ -1,0 +1,221 @@
+{
+  "created_at": "2026-09-17T02:21:34.180Z",
+  "data": {
+    "attribute_info": {},
+    "description": "",
+    "mark_id": "1",
+    "method": "POST",
+    "name": "pageInputDeckDataset",
+    "parent_id": "1f727e84f71170",
+    "project_id": "1f724f85b71016",
+    "protocol": "http/1.1",
+    "request": {
+      "auth": {
+        "asap": {
+          "alg": "HS256",
+          "aud": "",
+          "claims": "",
+          "exp": "",
+          "iss": "",
+          "kid": "",
+          "privateKey": "",
+          "sub": ""
+        },
+        "awsv4": {
+          "accessKey": "",
+          "addAuthDataToQuery": false,
+          "region": "",
+          "secretKey": "",
+          "service": "",
+          "sessionToken": ""
+        },
+        "basic": {
+          "password": "",
+          "username": ""
+        },
+        "bearer": {
+          "key": ""
+        },
+        "digest": {
+          "algorithm": "MD5",
+          "cnonce": "",
+          "disableRetryRequest": false,
+          "nc": "",
+          "nonce": "",
+          "opaque": "",
+          "password": "",
+          "qop": "",
+          "realm": "",
+          "username": ""
+        },
+        "edgegrid": {
+          "accessToken": "",
+          "baseURi": "",
+          "clientSecret": "",
+          "clientToken": "",
+          "headersToSign": "",
+          "nonce": "",
+          "timestamp": ""
+        },
+        "hawk": {
+          "algorithm": "",
+          "app": "",
+          "authId": "",
+          "authKey": "",
+          "delegation": "",
+          "extraData": "",
+          "includePayloadHash": false,
+          "nonce": "",
+          "timestamp": "",
+          "user": ""
+        },
+        "jwt": {
+          "addTokenTo": "header",
+          "algorithm": "HS256",
+          "header": "",
+          "headerPrefix": "Bearer",
+          "isSecretBase64Encoded": false,
+          "payload": "",
+          "queryParamKey": "token",
+          "secret": ""
+        },
+        "kv": {
+          "in": "header",
+          "key": "",
+          "value": ""
+        },
+        "ntlm": {
+          "disableRetryRequest": false,
+          "domain": "",
+          "password": "",
+          "username": "",
+          "workstation": ""
+        },
+        "oauth1": {
+          "addEmptyParamsToSign": true,
+          "addParamsToHeader": false,
+          "callback": "",
+          "consumerKey": "",
+          "consumerSecret": "",
+          "disableHeaderEncoding": false,
+          "includeBodyHash": true,
+          "nonce": "",
+          "realm": "",
+          "signatureMethod": "HMAC-SHA1",
+          "timestamp": "",
+          "token": "",
+          "tokenSecret": "",
+          "verifier": "",
+          "version": "1.0"
+        },
+        "oauth2": {
+          "accessTokenUrl": "",
+          "access_token": "",
+          "addTokenTo": "header",
+          "authRequestParams": [],
+          "authUrl": "",
+          "challengeAlgorithm": "S256",
+          "clientId": "",
+          "clientSecret": "",
+          "client_authentication": "header",
+          "code_verifier": "Bearer",
+          "grant_type": "authorization_code",
+          "headerPrefix": "Bearer",
+          "password": "",
+          "redirect_uri": "",
+          "refreshRequestParams": [],
+          "refreshTokenUrl": "",
+          "scope": "",
+          "state": "",
+          "tokenRequestParams": [],
+          "username": ""
+        },
+        "type": "inherit"
+      },
+      "body": {
+        "binary": {},
+        "mode": "json",
+        "parameter": [],
+        "raw": "{\r\n    \"currentPage\": 1,\r\n    \"pageSize\": 10,\r\n    \"scenarioId\": \"SDM-2026051919300Ap-RN\",\r\n    \"inputParams\": [\r\n        {\r\n            \"name\": \"NVH计算文件\",\r\n            \"key\": \"233\",\r\n            \"attribute\": \"8\"\r\n        },\r\n        {\r\n            \"name\": \"数值输入参数1\",\r\n            \"key\": \"SDM-202605191922MG9bp6\",\r\n            \"attribute\": \"1\"\r\n        },\r\n        {\r\n            \"name\": \"文件输入参数3\",\r\n            \"key\": \"SDM-20260519192307OiBh\",\r\n            \"attribute\": \"3\"\r\n        },\r\n        {\r\n            \"name\": \"文本输入参数2\",\r\n            \"key\": \"SDM-202605191923NnmrPB\",\r\n            \"attribute\": \"2\"\r\n        },\r\n        {\r\n            \"name\": \"布尔输入参数6\",\r\n            \"key\": \"SDM-202605191924_uxvxY\",\r\n            \"attribute\": \"4\"\r\n        },\r\n        {\r\n            \"name\": \"布尔输入参数4\",\r\n            \"key\": \"SDM-202605191924h7Dlib\",\r\n            \"attribute\": \"4\"\r\n        },\r\n        {\r\n            \"name\": \"文本输入参数5\",\r\n            \"key\": \"SDM-2026051919232AkCN8\",\r\n            \"attribute\": \"2\"\r\n        },\r\n        {\r\n            \"name\": \"文本输入参数3\",\r\n            \"key\": \"SDM-202605191923FLCY8G\",\r\n            \"attribute\": \"2\"\r\n        },\r\n        {\r\n            \"name\": \"枚举输入参数5\",\r\n            \"key\": \"SDM-202605191925fRyooP\",\r\n            \"attribute\": \"5\"\r\n        },\r\n        {\r\n            \"name\": \"枚举输入参数1\",\r\n            \"key\": \"SDM-202605191925sZAy6K\",\r\n            \"attribute\": \"5\"\r\n        },\r\n        {\r\n            \"name\": \"数值输入参数5\",\r\n            \"key\": \"SDM-202605191922zpMwGV\",\r\n            \"attribute\": \"1\"\r\n        },\r\n        {\r\n            \"name\": \"布尔输入参数1\",\r\n            \"key\": \"SDM-2026051919244d0iiO\",\r\n            \"attribute\": \"4\"\r\n        },\r\n        {\r\n            \"name\": \"文件输入参数4\",\r\n            \"key\": \"SDM-202605191923WKOa84\",\r\n            \"attribute\": \"3\"\r\n        },\r\n        {\r\n            \"name\": \"枚举输入参数2\",\r\n            \"key\": \"SDM-202605191925p81q1o\",\r\n            \"attribute\": \"5\"\r\n        },\r\n        {\r\n            \"name\": \"文本输入参数4\",\r\n            \"key\": \"SDM-2026051919239HbIUK\",\r\n            \"attribute\": \"2\"\r\n        },\r\n        {\r\n            \"name\": \"文件输入参数5\",\r\n            \"key\": \"SDM-202605191923RnYLGl\",\r\n            \"attribute\": \"3\"\r\n        },\r\n        {\r\n            \"name\": \"枚举输入参数3\",\r\n            \"key\": \"SDM-202605191925uxj1Pz\",\r\n            \"attribute\": \"5\"\r\n        },\r\n        {\r\n            \"name\": \"数值输入参数3\",\r\n            \"key\": \"SDM-202605191922dUz8Oq\",\r\n            \"attribute\": \"1\"\r\n        },\r\n        {\r\n            \"name\": \"布尔输入参数5\",\r\n            \"key\": \"SDM-202605191924bO7FaN\",\r\n            \"attribute\": \"4\"\r\n        },\r\n        {\r\n            \"name\": \"文件输入参数6\",\r\n            \"key\": \"SDM-202605191923se7J-G\",\r\n            \"attribute\": \"3\"\r\n        },\r\n        {\r\n            \"name\": \"文件输入参数1\",\r\n            \"key\": \"SDM-202605191923uWrjnK\",\r\n            \"attribute\": \"3\"\r\n        },\r\n        {\r\n            \"name\": \"数值输入参数2\",\r\n            \"key\": \"SDM-202605191922p4XAWU\",\r\n            \"attribute\": \"1\"\r\n        },\r\n        {\r\n            \"name\": \"布尔输入参数3\",\r\n            \"key\": \"SDM-202605191924u3TKPS\",\r\n            \"attribute\": \"4\"\r\n        },\r\n        {\r\n            \"name\": \"文件输入参数2\",\r\n            \"key\": \"SDM-202605191923a7CadJ\",\r\n            \"attribute\": \"3\"\r\n        },\r\n        {\r\n            \"name\": \"数值输入参数4\",\r\n            \"key\": \"SDM-202605191922Go787X\",\r\n            \"attribute\": \"1\"\r\n        },\r\n        {\r\n            \"name\": \"枚举输入参数6\",\r\n            \"key\": \"SDM-2026051919257RB8zU\",\r\n            \"attribute\": \"5\"\r\n        },\r\n        {\r\n            \"name\": \"文本输入参数1\",\r\n            \"key\": \"SDM-202605191923F-ft-C\",\r\n            \"attribute\": \"2\"\r\n        },\r\n        {\r\n            \"name\": \"布尔输入参数2\",\r\n            \"key\": \"SDM-202605191924AZ8oXr\",\r\n            \"attribute\": \"4\"\r\n        },\r\n        {\r\n            \"name\": \"枚举输入参数4\",\r\n            \"key\": \"SDM-202605191925UFCHtc\",\r\n            \"attribute\": \"5\"\r\n        }\r\n    ],\r\n    \"outputParams\": [\r\n        {\r\n            \"name\": \"原始结果\",\r\n            \"key\": \"32\",\r\n            \"attribute\": \"16\"\r\n        },\r\n        {\r\n            \"name\": \" 数值关键结果4\",\r\n            \"key\": \"SDM-202605191956zrz9Nd\",\r\n            \"attribute\": \"11\"\r\n        },\r\n        {\r\n            \"name\": \"数值关键结果1\",\r\n            \"key\": \"SDM-202605191956nMvWPi\",\r\n            \"attribute\": \"11\"\r\n        },\r\n        {\r\n            \"name\": \"动画2\",\r\n            \"key\": \"SDM-2026051920086DzCrZ\",\r\n            \"attribute\": \"14\"\r\n        },\r\n        {\r\n            \"name\": \"动画1\",\r\n            \"key\": \"SDM-2026051920083NgX9T\",\r\n            \"attribute\": \"14\"\r\n        },\r\n        {\r\n            \"name\": \"文件1\",\r\n            \"key\": \"SDM-202605192008U3w6KS\",\r\n            \"attribute\": \"1\"\r\n        },\r\n        {\r\n            \"name\": \" 关键结果曲线4\",\r\n            \"key\": \"SDM-202605191956cksGEA\",\r\n            \"attribute\": \"12\"\r\n        },\r\n        {\r\n            \"name\": \"文件2\",\r\n            \"key\": \"SDM-202605192008LeCE5o\",\r\n            \"attribute\": \"1\"\r\n        },\r\n        {\r\n            \"name\": \"图片2\",\r\n            \"key\": \"SDM-202605192008IpyQSo\",\r\n            \"attribute\": \"13\"\r\n        },\r\n        {\r\n            \"name\": \" 关键结果曲线3\",\r\n            \"key\": \"SDM-202605191956-Psr9W\",\r\n            \"attribute\": \"12\"\r\n        },\r\n        {\r\n            \"name\": \" 数值关键结果5\",\r\n            \"key\": \"SDM-202605191956c2jKuJ\",\r\n            \"attribute\": \"11\"\r\n        },\r\n        {\r\n            \"name\": \"图片1\",\r\n            \"key\": \"SDM-202605192008FbQASZ\",\r\n            \"attribute\": \"13\"\r\n        },\r\n        {\r\n            \"name\": \" 数值关键结果6\",\r\n            \"key\": \"SDM-2026051919563weMOT\",\r\n            \"attribute\": \"11\"\r\n        },\r\n        {\r\n            \"name\": \" 数值关键结果2\",\r\n            \"key\": \"SDM-2026051919562AJZCt\",\r\n            \"attribute\": \"11\"\r\n        },\r\n        {\r\n            \"name\": \"布尔关键结果1\",\r\n            \"key\": \"SDM-202605191956X2HmVw\",\r\n            \"attribute\": \"15\"\r\n        },\r\n        {\r\n            \"name\": \" 关键结果曲线5\",\r\n            \"key\": \"SDM-202605191956dMSjTt\",\r\n            \"attribute\": \"12\"\r\n        },\r\n        {\r\n            \"name\": \"关键结果曲线1\",\r\n            \"key\": \"SDM-202605191956y_AIx8\",\r\n            \"attribute\": \"12\"\r\n        },\r\n        {\r\n            \"name\": \" 数值关键结果3\",\r\n            \"key\": \"SDM-202605191956A4TrpP\",\r\n            \"attribute\": \"11\"\r\n        },\r\n        {\r\n            \"name\": \" 关键结果曲线2\",\r\n            \"key\": \"SDM-202605191956b_4Y9F\",\r\n            \"attribute\": \"12\"\r\n        },\r\n        {\r\n            \"name\": \"布尔关键结果2\",\r\n            \"key\": \"SDM-202605191956Ez6-48\",\r\n            \"attribute\": \"15\"\r\n        }\r\n    ],\r\n    \"roundIds\": []\r\n}",
+        "raw_parameter": [],
+        "raw_schema": {
+          "type": "object"
+        }
+      },
+      "cookie": {
+        "parameter": []
+      },
+      "header": {
+        "parameter": []
+      },
+      "post_tasks": [],
+      "pre_tasks": [],
+      "query": {
+        "parameter": []
+      },
+      "restful": {
+        "parameter": []
+      }
+    },
+    "response": {
+      "example": [
+        {
+          "example_id": "1",
+          "expect": {
+            "code": "200",
+            "content_type": "json",
+            "is_default": 1,
+            "mock": "",
+            "name": "成功",
+            "schema": {
+              "properties": {},
+              "type": "object"
+            },
+            "verify_type": "schema"
+          },
+          "headers": [],
+          "raw": "",
+          "raw_parameter": []
+        },
+        {
+          "example_id": "2",
+          "expect": {
+            "code": "404",
+            "content_type": "json",
+            "is_default": -1,
+            "mock": "",
+            "name": "失败",
+            "schema": {
+              "properties": {},
+              "type": "object"
+            },
+            "verify_type": "schema"
+          },
+          "headers": [],
+          "raw": "",
+          "raw_parameter": []
+        }
+      ],
+      "is_check_result": 1
+    },
+    "sort": 1000,
+    "tags": [],
+    "target_id": "1f727e857711f0",
+    "target_type": "api",
+    "url": "http://127.0.0.1:8085/dataManager/model/pageInputDeckDataset",
+    "version": 1130
+  },
+  "is_exampled": 0,
+  "mark_id": "1",
+  "method": "POST",
+  "name": "pageInputDeckDataset",
+  "parent_id": "1f727e84f71170",
+  "project_id": "1f724f85b71016",
+  "sort": 1000,
+  "status": 1,
+  "target_id": "1f727e857711f0",
+  "target_type": "api",
+  "updated_at": "2026-09-17T02:21:34.180Z",
+  "url": "http://127.0.0.1:8085/dataManager/model/pageInputDeckDataset",
+  "version": 1130
+}

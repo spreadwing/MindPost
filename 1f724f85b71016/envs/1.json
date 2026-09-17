@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-09-17T02:21:33.734Z",
+  "env_id": "1",
+  "env_var_list": {},
+  "is_private": -1,
+  "name": "默认环境",
+  "project_id": "1f724f85b71016",
+  "server_list": [
+    {
+      "name": "default",
+      "server_id": "1",
+      "sort": 1000,
+      "uri": ""
+    }
+  ],
+  "sort": 1000,
+  "updated_at": "2026-09-17T02:21:33.734Z"
+}

@@ -1,0 +1,181 @@
+{
+  "created_at": "2026-09-17T02:53:56.721Z",
+  "data": {
+    "ai_expect": {
+      "list": [],
+      "none_math_expect_id": "1"
+    },
+    "ai_expect_enable": -1,
+    "attribute_info": {},
+    "description": "用户查询控件显隐配置设置",
+    "is_check_result": 1,
+    "is_locked": -1,
+    "is_socket": 1,
+    "mark_id": "1",
+    "name": "setting (控件设置)",
+    "parent_id": "1f727e84f7115b",
+    "project_id": "1f724f85b71016",
+    "protocol": "http/1.1",
+    "request": {
+      "auth": {
+        "asap": {
+          "alg": "HS256",
+          "aud": "",
+          "claims": "",
+          "exp": "",
+          "iss": "",
+          "kid": "",
+          "privateKey": "",
+          "sub": ""
+        },
+        "awsv4": {
+          "accessKey": "",
+          "addAuthDataToQuery": false,
+          "region": "",
+          "secretKey": "",
+          "service": "",
+          "sessionToken": ""
+        },
+        "basic": {
+          "password": "",
+          "username": ""
+        },
+        "bearer": {
+          "key": ""
+        },
+        "digest": {
+          "algorithm": "MD5",
+          "cnonce": "",
+          "disableRetryRequest": false,
+          "nc": "",
+          "nonce": "",
+          "opaque": "",
+          "password": "",
+          "qop": "",
+          "realm": "",
+          "username": ""
+        },
+        "edgegrid": {
+          "accessToken": "",
+          "baseURi": "",
+          "clientSecret": "",
+          "clientToken": "",
+          "headersToSign": "",
+          "nonce": "",
+          "timestamp": ""
+        },
+        "hawk": {
+          "algorithm": "",
+          "app": "",
+          "authId": "",
+          "authKey": "",
+          "delegation": "",
+          "extraData": "",
+          "includePayloadHash": false,
+          "nonce": "",
+          "timestamp": "",
+          "user": ""
+        },
+        "jwt": {
+          "addTokenTo": "header",
+          "algorithm": "HS256",
+          "header": "",
+          "headerPrefix": "Bearer",
+          "isSecretBase64Encoded": false,
+          "payload": "",
+          "queryParamKey": "token",
+          "secret": ""
+        },
+        "kv": {
+          "in": "header",
+          "key": "",
+          "value": ""
+        },
+        "noauth": {},
+        "ntlm": {
+          "disableRetryRequest": false,
+          "domain": "",
+          "password": "",
+          "username": "",
+          "workstation": ""
+        },
+        "oauth1": {
+          "addEmptyParamsToSign": true,
+          "addParamsToHeader": false,
+          "callback": "",
+          "consumerKey": "",
+          "consumerSecret": "",
+          "disableHeaderEncoding": false,
+          "includeBodyHash": true,
+          "nonce": "",
+          "realm": "",
+          "signatureMethod": "HMAC-SHA1",
+          "timestamp": "",
+          "token": "",
+          "tokenSecret": "",
+          "verifier": "",
+          "version": "1.0"
+        },
+        "oauth2": {
+          "accessTokenUrl": "",
+          "access_token": "",
+          "addTokenTo": "header",
+          "authRequestParams": [],
+          "authUrl": "",
+          "challengeAlgorithm": "S256",
+          "clientId": "",
+          "clientSecret": "",
+          "client_authentication": "header",
+          "code_verifier": "Bearer",
+          "grant_type": "authorization_code",
+          "headerPrefix": "Bearer",
+          "password": "",
+          "redirect_uri": "",
+          "refreshRequestParams": [],
+          "refreshTokenUrl": "",
+          "scope": "",
+          "state": "",
+          "tokenRequestParams": [],
+          "username": ""
+        },
+        "type": "inherit"
+      },
+      "body": {
+        "parameter": []
+      },
+      "cookie": {
+        "parameter": []
+      },
+      "header": {
+        "parameter": []
+      },
+      "post_tasks": [],
+      "pre_tasks": [],
+      "query": {
+        "parameter": []
+      },
+      "restful": {
+        "parameter": []
+      }
+    },
+    "server_id": "0",
+    "sort": 0,
+    "status": 1,
+    "target_id": "1f79e7ef771219",
+    "target_type": "folder",
+    "version": 0
+  },
+  "is_exampled": 0,
+  "mark_id": "1",
+  "method": "",
+  "name": "setting (控件设置)",
+  "parent_id": "1f727e84f7115b",
+  "project_id": "1f724f85b71016",
+  "sort": 2,
+  "status": 1,
+  "target_id": "1f79e7ef771219",
+  "target_type": "folder",
+  "updated_at": "2026-09-17T02:53:56.721Z",
+  "url": "",
+  "version": 1
+}

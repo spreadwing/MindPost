@@ -1,0 +1,258 @@
+{
+  "created_at": "2026-09-17T02:21:34.069Z",
+  "data": {
+    "attribute_info": {},
+    "description": "",
+    "mark_id": "1",
+    "method": "GET",
+    "name": "getFilesByRoundPath",
+    "parent_id": "1f727e84f7116b",
+    "project_id": "1f724f85b71016",
+    "protocol": "http/1.1",
+    "request": {
+      "auth": {
+        "asap": {
+          "alg": "HS256",
+          "aud": "",
+          "claims": "",
+          "exp": "",
+          "iss": "",
+          "kid": "",
+          "privateKey": "",
+          "sub": ""
+        },
+        "awsv4": {
+          "accessKey": "",
+          "addAuthDataToQuery": false,
+          "region": "",
+          "secretKey": "",
+          "service": "",
+          "sessionToken": ""
+        },
+        "basic": {
+          "password": "",
+          "username": ""
+        },
+        "bearer": {
+          "key": ""
+        },
+        "digest": {
+          "algorithm": "MD5",
+          "cnonce": "",
+          "disableRetryRequest": false,
+          "nc": "",
+          "nonce": "",
+          "opaque": "",
+          "password": "",
+          "qop": "",
+          "realm": "",
+          "username": ""
+        },
+        "edgegrid": {
+          "accessToken": "",
+          "baseURi": "",
+          "clientSecret": "",
+          "clientToken": "",
+          "headersToSign": "",
+          "nonce": "",
+          "timestamp": ""
+        },
+        "hawk": {
+          "algorithm": "",
+          "app": "",
+          "authId": "",
+          "authKey": "",
+          "delegation": "",
+          "extraData": "",
+          "includePayloadHash": false,
+          "nonce": "",
+          "timestamp": "",
+          "user": ""
+        },
+        "jwt": {
+          "addTokenTo": "header",
+          "algorithm": "HS256",
+          "header": "",
+          "headerPrefix": "Bearer",
+          "isSecretBase64Encoded": false,
+          "payload": "",
+          "queryParamKey": "token",
+          "secret": ""
+        },
+        "kv": {
+          "in": "header",
+          "key": "",
+          "value": ""
+        },
+        "ntlm": {
+          "disableRetryRequest": false,
+          "domain": "",
+          "password": "",
+          "username": "",
+          "workstation": ""
+        },
+        "oauth1": {
+          "addEmptyParamsToSign": true,
+          "addParamsToHeader": false,
+          "callback": "",
+          "consumerKey": "",
+          "consumerSecret": "",
+          "disableHeaderEncoding": false,
+          "includeBodyHash": true,
+          "nonce": "",
+          "realm": "",
+          "signatureMethod": "HMAC-SHA1",
+          "timestamp": "",
+          "token": "",
+          "tokenSecret": "",
+          "verifier": "",
+          "version": "1.0"
+        },
+        "oauth2": {
+          "accessTokenUrl": "",
+          "access_token": "",
+          "addTokenTo": "header",
+          "authRequestParams": [],
+          "authUrl": "",
+          "challengeAlgorithm": "S256",
+          "clientId": "",
+          "clientSecret": "",
+          "client_authentication": "header",
+          "code_verifier": "Bearer",
+          "grant_type": "authorization_code",
+          "headerPrefix": "Bearer",
+          "password": "",
+          "redirect_uri": "",
+          "refreshRequestParams": [],
+          "refreshTokenUrl": "",
+          "scope": "",
+          "state": "",
+          "tokenRequestParams": [],
+          "username": ""
+        },
+        "type": "inherit"
+      },
+      "body": {
+        "binary": {},
+        "mode": "none",
+        "parameter": [],
+        "raw": "{\r\n    \"fromNodeId\": \"SDM-202512022015TBa1PQ\",\r\n    \"destNodeId\": \"SDM-202601062011t02e5d\",\r\n    \"name\": \"V1\",\r\n    \"description\": \"\",\r\n    \"enableCopySub\": true,\r\n    \"enableCopyUser\": true,\r\n    \"enableCopyGroup\": true\r\n}",
+        "raw_parameter": [],
+        "raw_schema": {
+          "type": "object"
+        }
+      },
+      "cookie": {
+        "parameter": []
+      },
+      "header": {
+        "parameter": []
+      },
+      "post_tasks": [],
+      "pre_tasks": [],
+      "query": {
+        "parameter": [
+          {
+            "description": "",
+            "field_type": "string",
+            "is_checked": 1,
+            "key": "name",
+            "not_null": 1,
+            "param_id": "1f727c1277112d",
+            "schema": {
+              "type": "string"
+            },
+            "value": "A_1002"
+          },
+          {
+            "description": "",
+            "field_type": "string",
+            "is_checked": 1,
+            "key": "type",
+            "not_null": 1,
+            "param_id": "1f727c1277112e",
+            "schema": {
+              "type": "string"
+            },
+            "value": "round"
+          },
+          {
+            "description": "",
+            "field_type": "string",
+            "is_checked": 1,
+            "key": "objectId",
+            "not_null": 1,
+            "param_id": "1f727c1277112f",
+            "schema": {
+              "type": "string"
+            },
+            "value": "SDM-202608141320athaqK"
+          }
+        ]
+      },
+      "restful": {
+        "parameter": []
+      }
+    },
+    "response": {
+      "example": [
+        {
+          "example_id": "1",
+          "expect": {
+            "code": "200",
+            "content_type": "json",
+            "is_default": 1,
+            "mock": "",
+            "name": "成功",
+            "schema": {
+              "properties": {},
+              "type": "object"
+            },
+            "verify_type": "schema"
+          },
+          "headers": [],
+          "raw": "",
+          "raw_parameter": []
+        },
+        {
+          "example_id": "2",
+          "expect": {
+            "code": "404",
+            "content_type": "json",
+            "is_default": -1,
+            "mock": "",
+            "name": "失败",
+            "schema": {
+              "properties": {},
+              "type": "object"
+            },
+            "verify_type": "schema"
+          },
+          "headers": [],
+          "raw": "",
+          "raw_parameter": []
+        }
+      ],
+      "is_check_result": 1
+    },
+    "sort": 5000,
+    "tags": [],
+    "target_id": "1f727e853711db",
+    "target_type": "api",
+    "url": "http://127.0.0.1:8085/dataManager/round/getFilesByRoundPath?name=A_1002&type=round&objectId=SDM-202608141320athaqK",
+    "version": 1357
+  },
+  "is_exampled": 0,
+  "mark_id": "1",
+  "method": "GET",
+  "name": "getFilesByRoundPath",
+  "parent_id": "1f727e84f7116b",
+  "project_id": "1f724f85b71016",
+  "sort": 5000,
+  "status": 1,
+  "target_id": "1f727e853711db",
+  "target_type": "api",
+  "updated_at": "2026-09-17T02:21:34.069Z",
+  "url": "http://127.0.0.1:8085/dataManager/round/getFilesByRoundPath?name=A_1002&type=round&objectId=SDM-202608141320athaqK",
+  "version": 1357
+}

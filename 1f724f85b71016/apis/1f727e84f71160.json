@@ -1,0 +1,235 @@
+{
+  "created_at": "2026-09-17T02:21:33.867Z",
+  "data": {
+    "description": "",
+    "is_socket": 1,
+    "name": "吉利",
+    "parent_id": "0",
+    "project_id": "1f724f85b71016",
+    "request": {
+      "auth": {
+        "asap": {
+          "alg": "HS256",
+          "aud": "",
+          "claims": "",
+          "exp": "",
+          "iss": "",
+          "kid": "",
+          "privateKey": "",
+          "sub": ""
+        },
+        "awsv4": {
+          "accessKey": "",
+          "addAuthDataToQuery": false,
+          "region": "",
+          "secretKey": "",
+          "service": "",
+          "sessionToken": ""
+        },
+        "basic": {
+          "password": "",
+          "username": ""
+        },
+        "bearer": {
+          "key": ""
+        },
+        "digest": {
+          "algorithm": "MD5",
+          "cnonce": "",
+          "disableRetryRequest": false,
+          "nc": "",
+          "nonce": "",
+          "opaque": "",
+          "password": "",
+          "qop": "",
+          "realm": "",
+          "username": ""
+        },
+        "edgegrid": {
+          "accessToken": "",
+          "baseURi": "",
+          "clientSecret": "",
+          "clientToken": "",
+          "headersToSign": "",
+          "nonce": "",
+          "timestamp": ""
+        },
+        "hawk": {
+          "algorithm": "",
+          "app": "",
+          "authId": "",
+          "authKey": "",
+          "delegation": "",
+          "extraData": "",
+          "includePayloadHash": false,
+          "nonce": "",
+          "timestamp": "",
+          "user": ""
+        },
+        "jwt": {
+          "addTokenTo": "header",
+          "algorithm": "HS256",
+          "header": "",
+          "headerPrefix": "Bearer",
+          "isSecretBase64Encoded": false,
+          "payload": "",
+          "queryParamKey": "token",
+          "secret": ""
+        },
+        "kv": {
+          "in": "header",
+          "key": "",
+          "value": ""
+        },
+        "ntlm": {
+          "disableRetryRequest": false,
+          "domain": "",
+          "password": "",
+          "username": "",
+          "workstation": ""
+        },
+        "oauth1": {
+          "addEmptyParamsToSign": true,
+          "addParamsToHeader": false,
+          "callback": "",
+          "consumerKey": "",
+          "consumerSecret": "",
+          "disableHeaderEncoding": false,
+          "includeBodyHash": true,
+          "nonce": "",
+          "realm": "",
+          "signatureMethod": "HMAC-SHA1",
+          "timestamp": "",
+          "token": "",
+          "tokenSecret": "",
+          "verifier": "",
+          "version": "1.0"
+        },
+        "oauth2": {
+          "accessTokenUrl": "",
+          "access_token": "",
+          "addTokenTo": "header",
+          "authRequestParams": [],
+          "authUrl": "",
+          "challengeAlgorithm": "S256",
+          "clientId": "",
+          "clientSecret": "",
+          "client_authentication": "header",
+          "code_verifier": "Bearer",
+          "grant_type": "authorization_code",
+          "headerPrefix": "Bearer",
+          "password": "",
+          "redirect_uri": "",
+          "refreshRequestParams": [],
+          "refreshTokenUrl": "",
+          "scope": "",
+          "state": "",
+          "tokenRequestParams": [],
+          "username": ""
+        },
+        "type": "inherit"
+      },
+      "body": {
+        "parameter": []
+      },
+      "cookie": {
+        "parameter": []
+      },
+      "header": {
+        "parameter": [
+          {
+            "description": "",
+            "field_type": "string",
+            "is_checked": 1,
+            "key": "userId",
+            "not_null": 1,
+            "param_id": "1f727c11371115",
+            "schema": {
+              "type": "string"
+            },
+            "value": "1890002633797246976"
+          },
+          {
+            "description": "",
+            "field_type": "string",
+            "is_checked": 1,
+            "key": "username",
+            "not_null": 1,
+            "param_id": "1f727c11371116",
+            "schema": {
+              "type": "string"
+            },
+            "value": "sysadmin"
+          },
+          {
+            "description": "",
+            "field_type": "string",
+            "is_checked": 1,
+            "key": "account",
+            "not_null": 1,
+            "param_id": "1f727c11371117",
+            "schema": {
+              "type": "string"
+            },
+            "value": "sysadmin"
+          },
+          {
+            "description": "",
+            "field_type": "string",
+            "is_checked": -1,
+            "key": "userId",
+            "not_null": 1,
+            "param_id": "1f727c11371118",
+            "schema": {
+              "type": "string"
+            },
+            "value": "2071775949848113152"
+          },
+          {
+            "description": "",
+            "field_type": "string",
+            "is_checked": -1,
+            "key": "account",
+            "not_null": 1,
+            "param_id": "1f727c11371119",
+            "schema": {
+              "type": "string"
+            },
+            "value": "gri_cfd"
+          }
+        ]
+      },
+      "post_tasks": [],
+      "pre_tasks": [
+        {
+          "data": "apt.sendRequest({\r\n    url: 'http://192.168.110.25:9528/pandroid-api/ams-service/auth/NotVerification/login',\r\n    method: 'POST',\r\n    header: 'content-type: application/json',\r\n    body: {\r\n        mode: 'raw',\r\n        raw: JSON.stringify({\"account\":\"sysadmin\",\"password\":\"mUQPmy0wN4isYOuHi5h9F0POf9ERWjdu1cL+x/PBMIkchBANdhw5gDl74HrFiqgIjL9PVGjq/2P9hfWcQeoRjk+VvLj+2NbKTHskneaJPFmZGsRgVoMXAGZRLvtvlSUJ7ZZ4/AOq4VU6kYmUSewMfpuiB3SHysu2RpFbjPHftd4=\"})\r\n    }\r\n}, function (err, res) {\r\n    console.info(res);\r\n    apt.setRequestHeader(\"Authorization\", \"Bearer \"+res.json().data.token);\r\n});",
+          "enabled": 1,
+          "id": "1f727c11371114",
+          "name": "自定义脚本",
+          "type": "customScript"
+        }
+      ],
+      "query": {
+        "parameter": []
+      }
+    },
+    "server_id": "0",
+    "sort": 38000,
+    "target_id": "1f727e84f71160",
+    "target_type": "folder",
+    "version": 1231
+  },
+  "is_exampled": 0,
+  "mark_id": "",
+  "method": "",
+  "name": "吉利",
+  "parent_id": "0",
+  "project_id": "1f724f85b71016",
+  "sort": 38000,
+  "status": 1,
+  "target_id": "1f727e84f71160",
+  "target_type": "folder",
+  "updated_at": "2026-09-17T02:21:33.867Z",
+  "url": "",
+  "version": 1231
+}

@@ -1,0 +1,307 @@
+{
+  "created_at": "2026-09-17T02:53:56.734Z",
+  "data": {
+    "ai_expect": {
+      "list": [],
+      "none_math_expect_id": "1"
+    },
+    "ai_expect_enable": -1,
+    "attribute_info": {},
+    "description": "用户在“显示控件设置”抽屉/弹窗中勾选或取消勾选控件后点击“保存”，持久化存储配置。",
+    "is_check_result": 1,
+    "is_locked": -1,
+    "is_socket": 1,
+    "mark_id": "1",
+    "method": "POST",
+    "name": "saveUserConfig (保存当前用户查询控件显隐配置)",
+    "parent_id": "1f79e7ef771219",
+    "project_id": "1f724f85b71016",
+    "protocol": "http/1.1",
+    "request": {
+      "auth": {
+        "asap": {
+          "alg": "HS256",
+          "aud": "",
+          "claims": "",
+          "exp": "",
+          "iss": "",
+          "kid": "",
+          "privateKey": "",
+          "sub": ""
+        },
+        "awsv4": {
+          "accessKey": "",
+          "addAuthDataToQuery": false,
+          "region": "",
+          "secretKey": "",
+          "service": "",
+          "sessionToken": ""
+        },
+        "basic": {
+          "password": "",
+          "username": ""
+        },
+        "bearer": {
+          "key": ""
+        },
+        "digest": {
+          "algorithm": "MD5",
+          "cnonce": "",
+          "disableRetryRequest": false,
+          "nc": "",
+          "nonce": "",
+          "opaque": "",
+          "password": "",
+          "qop": "",
+          "realm": "",
+          "username": ""
+        },
+        "edgegrid": {
+          "accessToken": "",
+          "baseURi": "",
+          "clientSecret": "",
+          "clientToken": "",
+          "headersToSign": "",
+          "nonce": "",
+          "timestamp": ""
+        },
+        "hawk": {
+          "algorithm": "",
+          "app": "",
+          "authId": "",
+          "authKey": "",
+          "delegation": "",
+          "extraData": "",
+          "includePayloadHash": false,
+          "nonce": "",
+          "timestamp": "",
+          "user": ""
+        },
+        "jwt": {
+          "addTokenTo": "header",
+          "algorithm": "HS256",
+          "header": "",
+          "headerPrefix": "Bearer",
+          "isSecretBase64Encoded": false,
+          "payload": "",
+          "queryParamKey": "token",
+          "secret": ""
+        },
+        "kv": {
+          "in": "header",
+          "key": "",
+          "value": ""
+        },
+        "noauth": {},
+        "ntlm": {
+          "disableRetryRequest": false,
+          "domain": "",
+          "password": "",
+          "username": "",
+          "workstation": ""
+        },
+        "oauth1": {
+          "addEmptyParamsToSign": true,
+          "addParamsToHeader": false,
+          "callback": "",
+          "consumerKey": "",
+          "consumerSecret": "",
+          "disableHeaderEncoding": false,
+          "includeBodyHash": true,
+          "nonce": "",
+          "realm": "",
+          "signatureMethod": "HMAC-SHA1",
+          "timestamp": "",
+          "token": "",
+          "tokenSecret": "",
+          "verifier": "",
+          "version": "1.0"
+        },
+        "oauth2": {
+          "accessTokenUrl": "",
+          "access_token": "",
+          "addTokenTo": "header",
+          "authRequestParams": [],
+          "authUrl": "",
+          "challengeAlgorithm": "S256",
+          "clientId": "",
+          "clientSecret": "",
+          "client_authentication": "header",
+          "code_verifier": "Bearer",
+          "grant_type": "authorization_code",
+          "headerPrefix": "Bearer",
+          "password": "",
+          "redirect_uri": "",
+          "refreshRequestParams": [],
+          "refreshTokenUrl": "",
+          "scope": "",
+          "state": "",
+          "tokenRequestParams": [],
+          "username": ""
+        },
+        "type": "inherit"
+      },
+      "body": {
+        "binary": null,
+        "mode": "json",
+        "parameter": [
+          {
+            "description": "查询实体类型，固定如 workRequest",
+            "field_type": "String",
+            "is_checked": 1,
+            "key": "queryType",
+            "not_null": -1,
+            "param_id": "1f79e7ee771045",
+            "schema": {},
+            "value": "workRequest"
+          },
+          {
+            "description": "当前选中的控件编码列表",
+            "field_type": "Array",
+            "is_checked": 1,
+            "key": "visibleControls",
+            "not_null": -1,
+            "param_id": "1f79e7ee771046",
+            "schema": {},
+            "value": [
+              "vehicleModelProject",
+              "phaseProject",
+              "subjectProject",
+              "simConfig",
+              "taskTargetStatus",
+              "owner",
+              "createTime",
+              "keyword"
+            ]
+          }
+        ],
+        "raw": "{\n\t\"queryType\": \"workRequest\",\n\t\"visibleControls\": [\n\t\t\"\"\n\t]\n}",
+        "raw_parameter": [],
+        "raw_schema": {
+          "properties": {
+            "queryType": {
+              "description": "查询实体类型，固定如 workRequest",
+              "example": "workRequest",
+              "type": "string"
+            },
+            "visibleControls": {
+              "description": "当前选中的控件编码列表",
+              "example": [
+                "vehicleModelProject",
+                "phaseProject",
+                "subjectProject",
+                "simConfig",
+                "taskTargetStatus",
+                "owner",
+                "createTime",
+                "keyword"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "queryType",
+            "visibleControls"
+          ],
+          "type": "object"
+        }
+      },
+      "cookie": {
+        "parameter": []
+      },
+      "header": {
+        "parameter": []
+      },
+      "post_tasks": [],
+      "pre_tasks": [],
+      "query": {
+        "parameter": []
+      },
+      "restful": {
+        "parameter": []
+      }
+    },
+    "response": {
+      "example": [
+        {
+          "example_id": "2",
+          "expect": {
+            "code": "404",
+            "content_type": "json",
+            "is_default": -1,
+            "mock": "",
+            "name": "失败",
+            "schema": {
+              "properties": {},
+              "type": "object"
+            },
+            "sleep": 0,
+            "verify_type": "schema"
+          },
+          "headers": [],
+          "raw": "",
+          "raw_parameter": []
+        },
+        {
+          "example_id": "1",
+          "expect": {
+            "code": "200",
+            "content_type": "json",
+            "is_default": 1,
+            "mock": "",
+            "name": "操作成功",
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": "200",
+                  "type": "string"
+                },
+                "data": {
+                  "example": true,
+                  "type": "boolean"
+                },
+                "msg": {
+                  "example": "操作成功",
+                  "type": "string"
+                },
+                "success": {
+                  "example": true,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "verify_type": "schema"
+          },
+          "raw": "{\n\t\"code\": \"200\",\n\t\"success\": true,\n\t\"msg\": \"操作成功\",\n\t\"data\": true\n}",
+          "raw_parameter": []
+        }
+      ],
+      "is_check_result": 1
+    },
+    "server_id": "0",
+    "sort": 0,
+    "status": 1,
+    "tags": [],
+    "target_id": "1f79e7efb7121f",
+    "target_type": "api",
+    "url": "/queryManage/setting/saveUserConfig",
+    "version": 0
+  },
+  "is_exampled": 0,
+  "mark_id": "1",
+  "method": "POST",
+  "name": "saveUserConfig (保存当前用户查询控件显隐配置)",
+  "parent_id": "1f79e7ef771219",
+  "project_id": "1f724f85b71016",
+  "sort": 8,
+  "status": 1,
+  "target_id": "1f79e7efb7121f",
+  "target_type": "api",
+  "updated_at": "2026-09-17T02:53:56.734Z",
+  "url": "/queryManage/setting/saveUserConfig",
+  "version": 1
+}

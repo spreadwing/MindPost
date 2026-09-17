@@ -1,0 +1,315 @@
+{
+  "created_at": "2026-09-17T02:53:56.722Z",
+  "data": {
+    "ai_expect": {
+      "list": [],
+      "none_math_expect_id": "1"
+    },
+    "ai_expect_enable": -1,
+    "attribute_info": {},
+    "description": "用于查询栏中的车型、阶段、学科级联下拉框。后端在查询学科（154）时会自动交集过滤当前登录用户的学科权限。targetLevel 可选值：vehicleModel, phase, subject",
+    "is_check_result": 1,
+    "is_locked": -1,
+    "is_socket": 1,
+    "mark_id": "1",
+    "method": "POST",
+    "name": "cascadeOptions (车型/阶段/学科级联下拉选项)",
+    "parent_id": "1f79e7ef771218",
+    "project_id": "1f724f85b71016",
+    "protocol": "http/1.1",
+    "request": {
+      "auth": {
+        "asap": {
+          "alg": "HS256",
+          "aud": "",
+          "claims": "",
+          "exp": "",
+          "iss": "",
+          "kid": "",
+          "privateKey": "",
+          "sub": ""
+        },
+        "awsv4": {
+          "accessKey": "",
+          "addAuthDataToQuery": false,
+          "region": "",
+          "secretKey": "",
+          "service": "",
+          "sessionToken": ""
+        },
+        "basic": {
+          "password": "",
+          "username": ""
+        },
+        "bearer": {
+          "key": ""
+        },
+        "digest": {
+          "algorithm": "MD5",
+          "cnonce": "",
+          "disableRetryRequest": false,
+          "nc": "",
+          "nonce": "",
+          "opaque": "",
+          "password": "",
+          "qop": "",
+          "realm": "",
+          "username": ""
+        },
+        "edgegrid": {
+          "accessToken": "",
+          "baseURi": "",
+          "clientSecret": "",
+          "clientToken": "",
+          "headersToSign": "",
+          "nonce": "",
+          "timestamp": ""
+        },
+        "hawk": {
+          "algorithm": "",
+          "app": "",
+          "authId": "",
+          "authKey": "",
+          "delegation": "",
+          "extraData": "",
+          "includePayloadHash": false,
+          "nonce": "",
+          "timestamp": "",
+          "user": ""
+        },
+        "jwt": {
+          "addTokenTo": "header",
+          "algorithm": "HS256",
+          "header": "",
+          "headerPrefix": "Bearer",
+          "isSecretBase64Encoded": false,
+          "payload": "",
+          "queryParamKey": "token",
+          "secret": ""
+        },
+        "kv": {
+          "in": "header",
+          "key": "",
+          "value": ""
+        },
+        "noauth": {},
+        "ntlm": {
+          "disableRetryRequest": false,
+          "domain": "",
+          "password": "",
+          "username": "",
+          "workstation": ""
+        },
+        "oauth1": {
+          "addEmptyParamsToSign": true,
+          "addParamsToHeader": false,
+          "callback": "",
+          "consumerKey": "",
+          "consumerSecret": "",
+          "disableHeaderEncoding": false,
+          "includeBodyHash": true,
+          "nonce": "",
+          "realm": "",
+          "signatureMethod": "HMAC-SHA1",
+          "timestamp": "",
+          "token": "",
+          "tokenSecret": "",
+          "verifier": "",
+          "version": "1.0"
+        },
+        "oauth2": {
+          "accessTokenUrl": "",
+          "access_token": "",
+          "addTokenTo": "header",
+          "authRequestParams": [],
+          "authUrl": "",
+          "challengeAlgorithm": "S256",
+          "clientId": "",
+          "clientSecret": "",
+          "client_authentication": "header",
+          "code_verifier": "Bearer",
+          "grant_type": "authorization_code",
+          "headerPrefix": "Bearer",
+          "password": "",
+          "redirect_uri": "",
+          "refreshRequestParams": [],
+          "refreshTokenUrl": "",
+          "scope": "",
+          "state": "",
+          "tokenRequestParams": [],
+          "username": ""
+        },
+        "type": "inherit"
+      },
+      "body": {
+        "binary": null,
+        "mode": "json",
+        "parameter": [
+          {
+            "description": "目标层级：vehicleModel (车型), phase (阶段), subject (学科)",
+            "field_type": "String",
+            "is_checked": 1,
+            "key": "targetLevel",
+            "not_null": -1,
+            "param_id": "1f79e7ecf71014",
+            "schema": {},
+            "value": ""
+          },
+          {
+            "description": "上级节点 objectId 列表（第一级车型无需传；选车型后传车型 ID 查阶段；选阶段后传阶段 ID 查学科）",
+            "field_type": "Array",
+            "is_checked": 1,
+            "key": "parentObjectIds",
+            "not_null": -1,
+            "param_id": "1f79e7ecf71015",
+            "schema": {},
+            "value": ""
+          }
+        ],
+        "raw": "{\n\t\"targetLevel\": \"\",\n\t\"parentObjectIds\": [\n\t\t\"\"\n\t]\n}",
+        "raw_parameter": [],
+        "raw_schema": {
+          "example": {
+            "parentObjectIds": [],
+            "targetLevel": "vehicleModel"
+          },
+          "properties": {
+            "parentObjectIds": {
+              "description": "上级节点 objectId 列表（第一级车型无需传；选车型后传车型 ID 查阶段；选阶段后传阶段 ID 查学科）",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "targetLevel": {
+              "description": "目标层级：vehicleModel (车型), phase (阶段), subject (学科)",
+              "enum": [
+                "vehicleModel",
+                "phase",
+                "subject"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "targetLevel"
+          ],
+          "type": "object"
+        }
+      },
+      "cookie": {
+        "parameter": []
+      },
+      "header": {
+        "parameter": []
+      },
+      "post_tasks": [],
+      "pre_tasks": [],
+      "query": {
+        "parameter": []
+      },
+      "restful": {
+        "parameter": []
+      }
+    },
+    "response": {
+      "example": [
+        {
+          "example_id": "2",
+          "expect": {
+            "code": "404",
+            "content_type": "json",
+            "is_default": -1,
+            "mock": "",
+            "name": "失败",
+            "schema": {
+              "properties": {},
+              "type": "object"
+            },
+            "sleep": 0,
+            "verify_type": "schema"
+          },
+          "headers": [],
+          "raw": "",
+          "raw_parameter": []
+        },
+        {
+          "example_id": "1",
+          "expect": {
+            "code": "200",
+            "content_type": "json",
+            "is_default": 1,
+            "mock": "",
+            "name": "操作成功",
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": "200",
+                  "type": "string"
+                },
+                "data": {
+                  "items": {
+                    "properties": {
+                      "code": {
+                        "example": "154",
+                        "type": "string"
+                      },
+                      "name": {
+                        "example": "安全碰撞学科",
+                        "type": "string"
+                      },
+                      "objectId": {
+                        "example": "sb_001",
+                        "type": "string"
+                      },
+                      "parentId": {
+                        "example": "phase_proj_001",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "msg": {
+                  "example": "操作成功",
+                  "type": "string"
+                },
+                "success": {
+                  "example": true,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "verify_type": "schema"
+          },
+          "raw": "{\n\t\"code\": \"200\",\n\t\"success\": true,\n\t\"msg\": \"操作成功\",\n\t\"data\": [\n\t\t{\n\t\t\t\"objectId\": \"sb_001\",\n\t\t\t\"name\": \"安全碰撞学科\",\n\t\t\t\"code\": \"154\",\n\t\t\t\"parentId\": \"phase_proj_001\"\n\t\t}\n\t]\n}",
+          "raw_parameter": []
+        }
+      ],
+      "is_check_result": 1
+    },
+    "server_id": "0",
+    "sort": 0,
+    "status": 1,
+    "tags": [],
+    "target_id": "1f79e7efb7121a",
+    "target_type": "api",
+    "url": "/queryManage/meta/cascadeOptions",
+    "version": 0
+  },
+  "is_exampled": 0,
+  "mark_id": "1",
+  "method": "POST",
+  "name": "cascadeOptions (车型/阶段/学科级联下拉选项)",
+  "parent_id": "1f79e7ef771218",
+  "project_id": "1f724f85b71016",
+  "sort": 3,
+  "status": 1,
+  "target_id": "1f79e7efb7121a",
+  "target_type": "api",
+  "updated_at": "2026-09-17T02:53:56.722Z",
+  "url": "/queryManage/meta/cascadeOptions",
+  "version": 1
+}

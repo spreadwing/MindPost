@@ -1,0 +1,332 @@
+[
+  {
+    "field_type": "string",
+    "intro": "头像、icon",
+    "match_case": -1,
+    "match_rule": "{avatar,icon}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f17ffffe",
+    "mock_rule_content": "@image('100x100')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "图片",
+    "match_case": -1,
+    "match_rule": "{image,img,photo,pic}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f17fffff",
+    "mock_rule_content": "@image('400x400')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "URL",
+    "match_case": -1,
+    "match_rule": "*url",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800000",
+    "mock_rule_content": "@url('http')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "用户名、昵称",
+    "match_case": -1,
+    "match_rule": "{nickname,user_name,name}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800001",
+    "mock_rule_content": "@cname",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "标题、名称",
+    "match_case": -1,
+    "match_rule": "{title,name}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800002",
+    "mock_rule_content": "@ctitle",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "常见数字型",
+    "match_case": -1,
+    "match_rule": "{id,num,code,amount,quantity,price,discount,balance,money}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800003",
+    "mock_rule_content": "@natural(1,100)",
+    "mock_type": 1
+  },
+  {
+    "field_type": "integer",
+    "intro": "常见数字型",
+    "match_case": -1,
+    "match_rule": "{id,num,code,amount,quantity,price,discount,balance,money}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800004",
+    "mock_rule_content": "@natural(1,100)",
+    "mock_type": 1
+  },
+  {
+    "field_type": "number",
+    "intro": "常见数字型",
+    "match_case": -1,
+    "match_rule": "{id,num,code,amount,quantity,price,discount,balance,money}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800005",
+    "mock_rule_content": "@natural(1,100)",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "手机号",
+    "match_case": -1,
+    "match_rule": "*{phone,mobile,tel}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800006",
+    "mock_rule_content": "@phone",
+    "mock_type": 1
+  },
+  {
+    "field_type": "integer",
+    "intro": "手机号",
+    "match_case": -1,
+    "match_rule": "*{phone,mobile,tel}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800007",
+    "mock_rule_content": "@phone",
+    "mock_type": 1
+  },
+  {
+    "field_type": "number",
+    "intro": "手机号",
+    "match_case": -1,
+    "match_rule": "*{phone,mobile,tel}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800008",
+    "mock_rule_content": "@phone",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "字符串日期",
+    "match_case": -1,
+    "match_rule": "*date",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800009",
+    "mock_rule_content": "@date('yyyy-MM-dd')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "integer",
+    "intro": "数字型日期",
+    "match_case": -1,
+    "match_rule": "*date",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180000a",
+    "mock_rule_content": "@date('yyyyMMdd')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "number",
+    "intro": "数字型日期",
+    "match_case": -1,
+    "match_rule": "*date",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180000b",
+    "mock_rule_content": "@date('yyyyMMdd')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "字符串时间",
+    "match_case": -1,
+    "match_rule": "(created,updated,deleted)*at",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180000c",
+    "mock_rule_content": "@datetime('yyyy-MM-dd HH:mm:ss')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "字符串时间",
+    "match_case": -1,
+    "match_rule": "*time",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180000d",
+    "mock_rule_content": "@datetime('yyyy-MM-dd HH:mm:ss')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "integer",
+    "intro": "时间戳",
+    "match_case": -1,
+    "match_rule": "(created,updated,deleted)*at",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180000e",
+    "mock_rule_content": "@datetime('T')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "integer",
+    "intro": "时间戳",
+    "match_case": -1,
+    "match_rule": "*time",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180000f",
+    "mock_rule_content": "@datetime('T')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "number",
+    "intro": "时间戳",
+    "match_case": -1,
+    "match_rule": "(created,updated,deleted)*at",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800010",
+    "mock_rule_content": "@datetime('T')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "number",
+    "intro": "时间戳",
+    "match_case": -1,
+    "match_rule": "*time",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800011",
+    "mock_rule_content": "@datetime('T')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "邮箱",
+    "match_case": -1,
+    "match_rule": "*mail*",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800012",
+    "mock_rule_content": "@email('gmail.com')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "省份",
+    "match_case": -1,
+    "match_rule": "*province*",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800013",
+    "mock_rule_content": "@province",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "城市",
+    "match_case": -1,
+    "match_rule": "*city*",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800014",
+    "mock_rule_content": "@city",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "地址",
+    "match_case": -1,
+    "match_rule": "*address",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800015",
+    "mock_rule_content": "@address",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "区",
+    "match_case": -1,
+    "match_rule": "*district",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800016",
+    "mock_rule_content": "@county",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "IP地址",
+    "match_case": -1,
+    "match_rule": "*ip",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800017",
+    "mock_rule_content": "@ip",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "字符串出生日期",
+    "match_case": -1,
+    "match_rule": "birthday",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800018",
+    "mock_rule_content": "@date('yyyy-MM-dd')",
+    "mock_type": 1
+  },
+  {
+    "field_type": "integer",
+    "intro": "数字型出生日期",
+    "match_case": -1,
+    "match_rule": "birthday",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f1800019",
+    "mock_rule_content": "@date(yyyyMMdd)",
+    "mock_type": 1
+  },
+  {
+    "field_type": "number",
+    "intro": "数字型出生日期",
+    "match_case": -1,
+    "match_rule": "birthday",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180001a",
+    "mock_rule_content": "@date(yyyyMMdd)",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "中文性别",
+    "match_case": -1,
+    "match_rule": "{gender,sex}",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180001b",
+    "mock_rule_content": "@pick([\"男\",\"女\"])",
+    "mock_type": 1
+  },
+  {
+    "field_type": "string",
+    "intro": "中文描述",
+    "match_case": -1,
+    "match_rule": "description",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180001c",
+    "mock_rule_content": "@cparagraph",
+    "mock_type": 1
+  },
+  {
+    "field_type": "integer",
+    "intro": "通用数字类型",
+    "match_case": -1,
+    "match_rule": "*",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180001d",
+    "mock_rule_content": "@natural(1, 100)",
+    "mock_type": 1
+  },
+  {
+    "field_type": "number",
+    "intro": "通用数字类型",
+    "match_case": -1,
+    "match_rule": "*",
+    "match_type": "wildcard",
+    "mock_custom_rule_id": "1f97b28f180001e",
+    "mock_rule_content": "@natural(1, 100)",
+    "mock_type": 1
+  }
+]

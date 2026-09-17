@@ -1,0 +1,393 @@
+{
+  "created_at": "2026-09-17T02:53:56.724Z",
+  "data": {
+    "ai_expect": {
+      "list": [],
+      "none_math_expect_id": "1"
+    },
+    "ai_expect_enable": -1,
+    "attribute_info": {},
+    "description": "用于仿真配置（simConfig）或仿真任务（workRequest）的 Select 下拉远程联想检索，输入文字后返回匹配项（上限 50 条）。",
+    "is_check_result": 1,
+    "is_locked": -1,
+    "is_socket": 1,
+    "mark_id": "1",
+    "method": "POST",
+    "name": "remoteSearchNodes (仿真配置与任务远程联想搜索)",
+    "parent_id": "1f79e7ef771218",
+    "project_id": "1f724f85b71016",
+    "protocol": "http/1.1",
+    "request": {
+      "auth": {
+        "asap": {
+          "alg": "HS256",
+          "aud": "",
+          "claims": "",
+          "exp": "",
+          "iss": "",
+          "kid": "",
+          "privateKey": "",
+          "sub": ""
+        },
+        "awsv4": {
+          "accessKey": "",
+          "addAuthDataToQuery": false,
+          "region": "",
+          "secretKey": "",
+          "service": "",
+          "sessionToken": ""
+        },
+        "basic": {
+          "password": "",
+          "username": ""
+        },
+        "bearer": {
+          "key": ""
+        },
+        "digest": {
+          "algorithm": "MD5",
+          "cnonce": "",
+          "disableRetryRequest": false,
+          "nc": "",
+          "nonce": "",
+          "opaque": "",
+          "password": "",
+          "qop": "",
+          "realm": "",
+          "username": ""
+        },
+        "edgegrid": {
+          "accessToken": "",
+          "baseURi": "",
+          "clientSecret": "",
+          "clientToken": "",
+          "headersToSign": "",
+          "nonce": "",
+          "timestamp": ""
+        },
+        "hawk": {
+          "algorithm": "",
+          "app": "",
+          "authId": "",
+          "authKey": "",
+          "delegation": "",
+          "extraData": "",
+          "includePayloadHash": false,
+          "nonce": "",
+          "timestamp": "",
+          "user": ""
+        },
+        "jwt": {
+          "addTokenTo": "header",
+          "algorithm": "HS256",
+          "header": "",
+          "headerPrefix": "Bearer",
+          "isSecretBase64Encoded": false,
+          "payload": "",
+          "queryParamKey": "token",
+          "secret": ""
+        },
+        "kv": {
+          "in": "header",
+          "key": "",
+          "value": ""
+        },
+        "noauth": {},
+        "ntlm": {
+          "disableRetryRequest": false,
+          "domain": "",
+          "password": "",
+          "username": "",
+          "workstation": ""
+        },
+        "oauth1": {
+          "addEmptyParamsToSign": true,
+          "addParamsToHeader": false,
+          "callback": "",
+          "consumerKey": "",
+          "consumerSecret": "",
+          "disableHeaderEncoding": false,
+          "includeBodyHash": true,
+          "nonce": "",
+          "realm": "",
+          "signatureMethod": "HMAC-SHA1",
+          "timestamp": "",
+          "token": "",
+          "tokenSecret": "",
+          "verifier": "",
+          "version": "1.0"
+        },
+        "oauth2": {
+          "accessTokenUrl": "",
+          "access_token": "",
+          "addTokenTo": "header",
+          "authRequestParams": [],
+          "authUrl": "",
+          "challengeAlgorithm": "S256",
+          "clientId": "",
+          "clientSecret": "",
+          "client_authentication": "header",
+          "code_verifier": "Bearer",
+          "grant_type": "authorization_code",
+          "headerPrefix": "Bearer",
+          "password": "",
+          "redirect_uri": "",
+          "refreshRequestParams": [],
+          "refreshTokenUrl": "",
+          "scope": "",
+          "state": "",
+          "tokenRequestParams": [],
+          "username": ""
+        },
+        "type": "inherit"
+      },
+      "body": {
+        "binary": null,
+        "mode": "json",
+        "parameter": [
+          {
+            "description": "搜索节点类型：simConfig (仿真配置) 或 workRequest (任务)",
+            "field_type": "String",
+            "is_checked": 1,
+            "key": "nodeType",
+            "not_null": -1,
+            "param_id": "1f79e7ed77101f",
+            "schema": {},
+            "value": ""
+          },
+          {
+            "description": "联想模糊关键字",
+            "field_type": "String",
+            "is_checked": 1,
+            "key": "keyword",
+            "not_null": -1,
+            "param_id": "1f79e7ed771020",
+            "schema": {},
+            "value": ""
+          },
+          {
+            "description": "车型项目 ID 列表（搜索任务时可用）",
+            "field_type": "Array",
+            "is_checked": 1,
+            "key": "vehicleModelProjects",
+            "not_null": -1,
+            "param_id": "1f79e7ed771021",
+            "schema": {},
+            "value": ""
+          },
+          {
+            "description": "阶段项目 ID 列表（搜索任务时可用）",
+            "field_type": "Array",
+            "is_checked": 1,
+            "key": "phaseProjects",
+            "not_null": -1,
+            "param_id": "1f79e7ed771022",
+            "schema": {},
+            "value": ""
+          },
+          {
+            "description": "所属学科项目 ID 列表（配置关联在学科下）",
+            "field_type": "Array",
+            "is_checked": 1,
+            "key": "subjectProjects",
+            "not_null": -1,
+            "param_id": "1f79e7ed771023",
+            "schema": {},
+            "value": ""
+          },
+          {
+            "description": "仿真配置 ID 列表（搜索任务时可用）",
+            "field_type": "Array",
+            "is_checked": 1,
+            "key": "simConfigs",
+            "not_null": -1,
+            "param_id": "1f79e7ed771024",
+            "schema": {},
+            "value": ""
+          },
+          {
+            "description": "返回条数限制，默认 50，最大 100",
+            "field_type": "Integer",
+            "is_checked": 1,
+            "key": "limit",
+            "not_null": -1,
+            "param_id": "1f79e7ed771025",
+            "schema": {},
+            "value": ""
+          }
+        ],
+        "raw": "{\n\t\"nodeType\": \"\",\n\t\"keyword\": \"\",\n\t\"vehicleModelProjects\": [\n\t\t\"\"\n\t],\n\t\"phaseProjects\": [\n\t\t\"\"\n\t],\n\t\"subjectProjects\": [\n\t\t\"\"\n\t],\n\t\"simConfigs\": [\n\t\t\"\"\n\t],\n\t\"limit\": 50\n}",
+        "raw_parameter": [],
+        "raw_schema": {
+          "example": {
+            "keyword": "LS-DYNA",
+            "limit": 50,
+            "nodeType": "simConfig",
+            "phaseProjects": [],
+            "simConfigs": [],
+            "subjectProjects": [
+              "sb_001"
+            ],
+            "vehicleModelProjects": []
+          },
+          "properties": {
+            "keyword": {
+              "description": "联想模糊关键字",
+              "type": "string"
+            },
+            "limit": {
+              "default": 50,
+              "description": "返回条数限制，默认 50，最大 100",
+              "type": "integer"
+            },
+            "nodeType": {
+              "description": "搜索节点类型：simConfig (仿真配置) 或 workRequest (任务)",
+              "enum": [
+                "simConfig",
+                "workRequest"
+              ],
+              "type": "string"
+            },
+            "phaseProjects": {
+              "description": "阶段项目 ID 列表（搜索任务时可用）",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "simConfigs": {
+              "description": "仿真配置 ID 列表（搜索任务时可用）",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "subjectProjects": {
+              "description": "所属学科项目 ID 列表（配置关联在学科下）",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "vehicleModelProjects": {
+              "description": "车型项目 ID 列表（搜索任务时可用）",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "nodeType"
+          ],
+          "type": "object"
+        }
+      },
+      "cookie": {
+        "parameter": []
+      },
+      "header": {
+        "parameter": []
+      },
+      "post_tasks": [],
+      "pre_tasks": [],
+      "query": {
+        "parameter": []
+      },
+      "restful": {
+        "parameter": []
+      }
+    },
+    "response": {
+      "example": [
+        {
+          "example_id": "2",
+          "expect": {
+            "code": "404",
+            "content_type": "json",
+            "is_default": -1,
+            "mock": "",
+            "name": "失败",
+            "schema": {
+              "properties": {},
+              "type": "object"
+            },
+            "sleep": 0,
+            "verify_type": "schema"
+          },
+          "headers": [],
+          "raw": "",
+          "raw_parameter": []
+        },
+        {
+          "example_id": "1",
+          "expect": {
+            "code": "200",
+            "content_type": "json",
+            "is_default": 1,
+            "mock": "",
+            "name": "操作成功",
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": "200",
+                  "type": "string"
+                },
+                "data": {
+                  "items": {
+                    "properties": {
+                      "id": {
+                        "example": "cfg_001",
+                        "type": "string"
+                      },
+                      "name": {
+                        "example": "侧碰Standard-LS-DYNA",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "msg": {
+                  "example": "操作成功",
+                  "type": "string"
+                },
+                "success": {
+                  "example": true,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "verify_type": "schema"
+          },
+          "raw": "{\n\t\"code\": \"200\",\n\t\"success\": true,\n\t\"msg\": \"操作成功\",\n\t\"data\": [\n\t\t{\n\t\t\t\"id\": \"cfg_001\",\n\t\t\t\"name\": \"侧碰Standard-LS-DYNA\"\n\t\t}\n\t]\n}",
+          "raw_parameter": []
+        }
+      ],
+      "is_check_result": 1
+    },
+    "server_id": "0",
+    "sort": 0,
+    "status": 1,
+    "tags": [],
+    "target_id": "1f79e7efb7121b",
+    "target_type": "api",
+    "url": "/queryManage/meta/remoteSearchNodes",
+    "version": 0
+  },
+  "is_exampled": 0,
+  "mark_id": "1",
+  "method": "POST",
+  "name": "remoteSearchNodes (仿真配置与任务远程联想搜索)",
+  "parent_id": "1f79e7ef771218",
+  "project_id": "1f724f85b71016",
+  "sort": 4,
+  "status": 1,
+  "target_id": "1f79e7efb7121b",
+  "target_type": "api",
+  "updated_at": "2026-09-17T02:53:56.724Z",
+  "url": "/queryManage/meta/remoteSearchNodes",
+  "version": 1
+}

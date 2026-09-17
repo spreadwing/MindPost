@@ -1,0 +1,287 @@
+{
+  "created_at": "2026-09-17T02:53:56.726Z",
+  "data": {
+    "ai_expect": {
+      "list": [],
+      "none_math_expect_id": "1"
+    },
+    "ai_expect_enable": -1,
+    "attribute_info": {},
+    "description": "责任人支持按姓名、工号、域账号模糊搜索，返回带工号/账号的直观显示名称（上限 50 条）。",
+    "is_check_result": 1,
+    "is_locked": -1,
+    "is_socket": 1,
+    "mark_id": "1",
+    "method": "GET",
+    "name": "searchUsers (责任人实时联想过滤接口)",
+    "parent_id": "1f79e7ef771218",
+    "project_id": "1f724f85b71016",
+    "protocol": "http/1.1",
+    "request": {
+      "auth": {
+        "asap": {
+          "alg": "HS256",
+          "aud": "",
+          "claims": "",
+          "exp": "",
+          "iss": "",
+          "kid": "",
+          "privateKey": "",
+          "sub": ""
+        },
+        "awsv4": {
+          "accessKey": "",
+          "addAuthDataToQuery": false,
+          "region": "",
+          "secretKey": "",
+          "service": "",
+          "sessionToken": ""
+        },
+        "basic": {
+          "password": "",
+          "username": ""
+        },
+        "bearer": {
+          "key": ""
+        },
+        "digest": {
+          "algorithm": "MD5",
+          "cnonce": "",
+          "disableRetryRequest": false,
+          "nc": "",
+          "nonce": "",
+          "opaque": "",
+          "password": "",
+          "qop": "",
+          "realm": "",
+          "username": ""
+        },
+        "edgegrid": {
+          "accessToken": "",
+          "baseURi": "",
+          "clientSecret": "",
+          "clientToken": "",
+          "headersToSign": "",
+          "nonce": "",
+          "timestamp": ""
+        },
+        "hawk": {
+          "algorithm": "",
+          "app": "",
+          "authId": "",
+          "authKey": "",
+          "delegation": "",
+          "extraData": "",
+          "includePayloadHash": false,
+          "nonce": "",
+          "timestamp": "",
+          "user": ""
+        },
+        "jwt": {
+          "addTokenTo": "header",
+          "algorithm": "HS256",
+          "header": "",
+          "headerPrefix": "Bearer",
+          "isSecretBase64Encoded": false,
+          "payload": "",
+          "queryParamKey": "token",
+          "secret": ""
+        },
+        "kv": {
+          "in": "header",
+          "key": "",
+          "value": ""
+        },
+        "noauth": {},
+        "ntlm": {
+          "disableRetryRequest": false,
+          "domain": "",
+          "password": "",
+          "username": "",
+          "workstation": ""
+        },
+        "oauth1": {
+          "addEmptyParamsToSign": true,
+          "addParamsToHeader": false,
+          "callback": "",
+          "consumerKey": "",
+          "consumerSecret": "",
+          "disableHeaderEncoding": false,
+          "includeBodyHash": true,
+          "nonce": "",
+          "realm": "",
+          "signatureMethod": "HMAC-SHA1",
+          "timestamp": "",
+          "token": "",
+          "tokenSecret": "",
+          "verifier": "",
+          "version": "1.0"
+        },
+        "oauth2": {
+          "accessTokenUrl": "",
+          "access_token": "",
+          "addTokenTo": "header",
+          "authRequestParams": [],
+          "authUrl": "",
+          "challengeAlgorithm": "S256",
+          "clientId": "",
+          "clientSecret": "",
+          "client_authentication": "header",
+          "code_verifier": "Bearer",
+          "grant_type": "authorization_code",
+          "headerPrefix": "Bearer",
+          "password": "",
+          "redirect_uri": "",
+          "refreshRequestParams": [],
+          "refreshTokenUrl": "",
+          "scope": "",
+          "state": "",
+          "tokenRequestParams": [],
+          "username": ""
+        },
+        "type": "inherit"
+      },
+      "body": {
+        "binary": null,
+        "mode": "json",
+        "parameter": [],
+        "raw": "",
+        "raw_parameter": [],
+        "raw_schema": {}
+      },
+      "cookie": {
+        "parameter": []
+      },
+      "header": {
+        "parameter": []
+      },
+      "post_tasks": [],
+      "pre_tasks": [],
+      "query": {
+        "parameter": [
+          {
+            "description": "姓名 / 工号 / 域账号模糊检索词",
+            "field_type": "String",
+            "is_checked": 1,
+            "key": "keyword",
+            "not_null": -1,
+            "param_id": "1f79e7edf71032",
+            "schema": {
+              "example": "张三",
+              "type": "string"
+            },
+            "value": "张三"
+          },
+          {
+            "description": "返回上限，默认 50，最大 100",
+            "field_type": "Integer",
+            "is_checked": 1,
+            "key": "limit",
+            "not_null": -1,
+            "param_id": "1f79e7edf71033",
+            "schema": {
+              "default": 50,
+              "example": 20,
+              "type": "integer"
+            },
+            "value": "20"
+          }
+        ]
+      },
+      "restful": {
+        "parameter": []
+      }
+    },
+    "response": {
+      "example": [
+        {
+          "example_id": "2",
+          "expect": {
+            "code": "404",
+            "content_type": "json",
+            "is_default": -1,
+            "mock": "",
+            "name": "失败",
+            "schema": {
+              "properties": {},
+              "type": "object"
+            },
+            "sleep": 0,
+            "verify_type": "schema"
+          },
+          "headers": [],
+          "raw": "",
+          "raw_parameter": []
+        },
+        {
+          "example_id": "1",
+          "expect": {
+            "code": "200",
+            "content_type": "json",
+            "is_default": 1,
+            "mock": "",
+            "name": "操作成功",
+            "schema": {
+              "properties": {
+                "code": {
+                  "example": "200",
+                  "type": "string"
+                },
+                "data": {
+                  "items": {
+                    "properties": {
+                      "id": {
+                        "example": "usr_001",
+                        "type": "string"
+                      },
+                      "name": {
+                        "example": "张三 (zhangsan01)",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "msg": {
+                  "example": "操作成功",
+                  "type": "string"
+                },
+                "success": {
+                  "example": true,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "verify_type": "schema"
+          },
+          "raw": "{\n\t\"code\": \"200\",\n\t\"success\": true,\n\t\"msg\": \"操作成功\",\n\t\"data\": [\n\t\t{\n\t\t\t\"id\": \"usr_001\",\n\t\t\t\"name\": \"张三 (zhangsan01)\"\n\t\t}\n\t]\n}",
+          "raw_parameter": []
+        }
+      ],
+      "is_check_result": 1
+    },
+    "server_id": "0",
+    "sort": 0,
+    "status": 1,
+    "tags": [],
+    "target_id": "1f79e7efb7121c",
+    "target_type": "api",
+    "url": "/queryManage/meta/searchUsers?keyword=张三&limit=20",
+    "version": 0
+  },
+  "is_exampled": 0,
+  "mark_id": "1",
+  "method": "GET",
+  "name": "searchUsers (责任人实时联想过滤接口)",
+  "parent_id": "1f79e7ef771218",
+  "project_id": "1f724f85b71016",
+  "sort": 5,
+  "status": 1,
+  "target_id": "1f79e7efb7121c",
+  "target_type": "api",
+  "updated_at": "2026-09-17T02:53:56.726Z",
+  "url": "/queryManage/meta/searchUsers?keyword=张三&limit=20",
+  "version": 1
+}
