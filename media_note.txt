@@ -1,3 +1,9 @@
 这是一个存放在 /volume1/Media 目录下的文本文件。
 写入时间: 2026-09-23 14:52:00
 来源: Antigravity AI Assistant
+
+[追加记录 - 无技能纯规则测试]
+追加时间: 2026-09-23 15:23:00
+测试模式: 移除 nas_copilot_workflow 技能，仅依靠全局规范
+执行链路: start_agent_task -> agent_task_id 绑定 -> 状态同步 -> complete_agent_task
+结果状态: 验证成功
