@@ -1,0 +1,219 @@
+import 'package:flutter/material.dart';
+import '../../models/api_request.dart';
+
+class AiCopilotDrawer extends StatefulWidget {
+  final ApiRequest? activeRequest;
+  final VoidCallback onRequestUpdated;
+
+  const AiCopilotDrawer({
+    super.key,
+    required this.activeRequest,
+    required this.onRequestUpdated,
+  });
+
+  @override
+  State<AiCopilotDrawer> createState() => _AiCopilotDrawerState();
+}
+
+class _AiCopilotDrawerState extends State<AiCopilotDrawer> {
+  final TextEditingController _promptController = TextEditingController();
+  final List<Map<String, String>> _messages = [
+    {
+      'role': 'assistant',
+      'content':
+          '你好！我是 PostMCP 内置 AI 调试副驾。\n我可以协助你生成 API 请求定义、编写 HMAC 签名脚本或构造后置断言。你可以点击下方的快捷建议，或直接输入你的诉求。',
+    }
+  ];
+
+  void _applyHmacScript() {
+    if (widget.activeRequest == null) return;
+    widget.activeRequest!.preRequestScript = '''// AI 生成：自动计算 HMAC-SHA256 签名并注入 Headers
+const timestamp = Date.now();
+const nonce = Math.random().toString(36).substring(2);
+const secret = pm.environment.get("apiKey") || "default_secret";
+
+// 构造待签名字符串
+const rawSignStr = "timestamp=" + timestamp + "&nonce=" + nonce;
+const sign = CryptoJS.HmacSHA256(rawSignStr, secret).toString();
+
+// 注入请求头
+pm.request.headers.add({ key: "X-Timestamp", value: timestamp });
+pm.request.headers.add({ key: "X-Nonce", value: nonce });
+pm.request.headers.add({ key: "X-Signature", value: sign });
+
+console.log("签名计算成功: " + sign);''';
+    widget.onRequestUpdated();
+    setState(() {
+      _messages.add({
+        'role': 'assistant',
+        'content': '已为当前接口写入【HMAC-SHA256 动态签名】前置脚本并自动注入请求头！',
+      });
+    });
+  }
+
+  void _applyAssertions() {
+    if (widget.activeRequest == null) return;
+    widget.activeRequest!.postRequestScript = '''// AI 生成：标准测试断言
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Response contains data", function () {
+    var jsonData = pm.response.json();
+    if (!jsonData) throw new Error("Response is empty");
+});''';
+    widget.onRequestUpdated();
+    setState(() {
+      _messages.add({
+        'role': 'assistant',
+        'content': '已为当前接口写入常用的状态码与 JSON 数据校验断言！',
+      });
+    });
+  }
+
+  void _sendUserPrompt() {
+    final text = _promptController.text.trim();
+    if (text.isEmpty) return;
+
+    setState(() {
+      _messages.add({'role': 'user', 'content': text});
+      _promptController.clear();
+    });
+
+    // 模拟智能 Agent 分析并给出针对性建议
+    Future.delayed(const Duration(milliseconds: 300), () {
+      setState(() {
+        if (text.contains('签名') || text.contains('前置') || text.contains('sign')) {
+          _messages.add({
+            'role': 'assistant',
+            'content': '检测到你需要签名脚本，可点击下方按钮一键应用到当前接口的【Pre-request Script】中。',
+          });
+        } else if (text.contains('断言') || text.contains('测试')) {
+          _messages.add({
+            'role': 'assistant',
+            'content': '检测到你需要测试断言，可点击下方按钮一键应用标准校验代码。',
+          });
+        } else {
+          _messages.add({
+            'role': 'assistant',
+            'content':
+                '已分析需求：“$text”。推荐使用环境占位符如 `{{baseUrl}}` 与动态标签 `{{\$timestamp}}` 保持接口灵活性。',
+          });
+        }
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 320,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        border: Border(left: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.auto_awesome, color: Color(0xFF8B5CF6), size: 18),
+                const SizedBox(width: 8),
+                const Text(
+                  'AI 调试副驾 (Copilot)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 18),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final msg = _messages[index];
+                final isUser = msg['role'] == 'user';
+                return Align(
+                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isUser
+                          ? const Color(0xFF3B82F6)
+                          : Colors.grey.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      msg['content'] ?? '',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isUser ? Colors.white : null,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // 快捷指令标签
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                ActionChip(
+                  label: const Text('生成 HMAC 签名', style: TextStyle(fontSize: 11)),
+                  onPressed: _applyHmacScript,
+                ),
+                ActionChip(
+                  label: const Text('生成测试断言', style: TextStyle(fontSize: 11)),
+                  onPressed: _applyAssertions,
+                ),
+              ],
+            ),
+          ),
+          // 输入框
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: Colors.grey.shade300)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _promptController,
+                    style: const TextStyle(fontSize: 12),
+                    decoration: const InputDecoration(
+                      hintText: '输入诉求，如“帮我写个鉴权”...',
+                      isDense: true,
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => _sendUserPrompt(),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                IconButton(
+                  icon: const Icon(Icons.send, size: 16),
+                  color: const Color(0xFF8B5CF6),
+                  onPressed: _sendUserPrompt,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
