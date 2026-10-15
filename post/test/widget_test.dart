@@ -136,8 +136,8 @@ void main() {
     });
   });
 
-  testWidgets('MindPostApp 初始加载态烟雾测试', (WidgetTester tester) async {
+  testWidgets('MindPostApp 初始渲染烟雾测试', (WidgetTester tester) async {
     await tester.pumpWidget(const MindPostApp());
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }

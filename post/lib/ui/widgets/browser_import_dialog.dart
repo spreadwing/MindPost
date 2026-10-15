@@ -82,7 +82,10 @@ class BrowserRequestParser {
         lower.startsWith('curl.exe ') ||
         lower.startsWith('curl\t') ||
         lower.startsWith('curl\r') ||
-        lower.startsWith('curl\n');
+        lower.startsWith('curl\n') ||
+        lower.startsWith('curl.exe\t') ||
+        lower.startsWith('curl.exe\r') ||
+        lower.startsWith('curl.exe\n');
   }
 
   static bool _looksLikeFetch(String text) {
@@ -105,24 +108,60 @@ class BrowserRequestParser {
         .hasMatch(text);
   }
 
+  /// 脱去首尾成对的引号（单引号或双引号）
+  static String _unquote(String str) {
+    var s = str.trim();
+    while (s.length >= 2 &&
+        ((s.startsWith('"') && s.endsWith('"')) ||
+            (s.startsWith("'") && s.endsWith("'")))) {
+      s = s.substring(1, s.length - 1).trim();
+    }
+    return s;
+  }
+
+  /// 预处理并规范化 Windows CMD 下导出的 cURL 命令（例如 Chrome "Copy as cURL (cmd)"）
+  static String _normalizeCmdCurl(String input) {
+    var s = input;
+    // 1. 合并 CMD 行尾续行符 (包含前后空格)
+    s = s.replaceAll(RegExp(r'\s*\^\s*\r?\n\s*'), ' ');
+
+    // 2. 还原 cURL 在 CMD 双引号内的转义引号变体 (如 ^\^" 或 \^" 或 ^\") -> \"
+    s = s.replaceAll(r'^\^"', r'\"');
+    s = s.replaceAll(r'\^"', r'\"');
+    s = s.replaceAll(r'^\"', r'\"');
+
+    // 3. 还原 Chrome 对 % 的转义 (^%^ 或 ^%) -> %
+    s = s.replaceAll(r'^%^', '%');
+    s = s.replaceAll(r'^%', '%');
+
+    // 4. 保护真正转义的 caret (^^)
+    s = s.replaceAll('^^', '\u0000');
+
+    // 5. 将参数边界及独立的 ^" 还原为标准双引号 "
+    s = s.replaceAll('^"', '"');
+
+    // 6. 还原被 ^ 转义的 CMD 特殊字符 (如 ^{ ^} ^[ ^] ^( ^) ^& ^| ^< ^> ^= ^;)
+    s = s.replaceAllMapped(RegExp(r'\^(.)'), (m) => m.group(1)!);
+
+    // 7. 恢复 ^^
+    s = s.replaceAll('\u0000', '^');
+
+    return s;
+  }
+
   /// 解析浏览器 Copy as cURL (bash) 或 Copy as cURL (cmd)
   static ParsedBrowserRequest _parseCurl(String input) {
     String normalized = input;
-    // 检测是否为 Windows CMD 多行格式 (行尾 ^)
+    // 检测是否为 Windows CMD 格式
     final isCmdFormat = RegExp(r'\^\s*\r?\n').hasMatch(normalized) ||
         normalized.contains('^"') ||
-        normalized.contains('^{');
+        normalized.contains('^{') ||
+        normalized.contains(r'^\^"') ||
+        normalized.contains(r'\^"') ||
+        normalized.contains('^%');
 
     if (isCmdFormat) {
-      // 合并 CMD 续行符 ^\r?\n
-      normalized = normalized.replaceAll(RegExp(r'\^\s*\r?\n\s*'), ' ');
-      // 还原 CMD 转义字符：^" -> \" 以便分词器识别，或还原常见 ^x
-      normalized = normalized
-          .replaceAll('^^', '\u0000')
-          .replaceAll('^"', '\u0001')
-          .replaceAll('^%', '%')
-          .replaceAllMapped(RegExp(r'\^(.)'), (m) => m.group(1)!)
-          .replaceAll('\u0000', '^');
+      normalized = _normalizeCmdCurl(normalized);
     } else {
       // 合并 Bash 续行符 \\\r?\n 与 PowerShell `\r?\n
       normalized = normalized
@@ -149,32 +188,112 @@ class BrowserRequestParser {
     while (i < tokens.length) {
       final token = tokens[i];
 
+      // 请求方式 -X / --request
       if ((token == '-X' || token == '--request') && i + 1 < tokens.length) {
-        methodStr = tokens[++i].toUpperCase();
-      } else if ((token == '-H' || token == '--header') &&
+        methodStr = _unquote(tokens[++i]).toUpperCase();
+      } else if (token.startsWith('--request=')) {
+        methodStr = _unquote(token.substring(10)).toUpperCase();
+      } else if (token.startsWith('-X') && token.length > 2) {
+        methodStr = _unquote(token.substring(2)).toUpperCase();
+      }
+      // 请求头 -H / --header
+      else if ((token == '-H' || token == '--header') &&
           i + 1 < tokens.length) {
-        final rawHeader = tokens[++i];
+        final rawHeader = _unquote(tokens[++i]);
         final colonIdx = rawHeader.indexOf(':');
         if (colonIdx > 0) {
-          final k = rawHeader.substring(0, colonIdx).trim();
-          final v = rawHeader.substring(colonIdx + 1).trim();
+          final k = _unquote(rawHeader.substring(0, colonIdx).trim());
+          final v = _unquote(rawHeader.substring(colonIdx + 1).trim());
           if (k.isNotEmpty) {
             headers.add(KeyValueItem(key: k, value: v));
           }
         }
-      } else if ((token == '-b' || token == '--cookie') &&
+      } else if (token.startsWith('--header=')) {
+        final rawHeader = _unquote(token.substring(9));
+        final colonIdx = rawHeader.indexOf(':');
+        if (colonIdx > 0) {
+          final k = _unquote(rawHeader.substring(0, colonIdx).trim());
+          final v = _unquote(rawHeader.substring(colonIdx + 1).trim());
+          if (k.isNotEmpty) {
+            headers.add(KeyValueItem(key: k, value: v));
+          }
+        }
+      } else if (token.startsWith('-H') && token.length > 2) {
+        final rawHeader = _unquote(token.substring(2));
+        final colonIdx = rawHeader.indexOf(':');
+        if (colonIdx > 0) {
+          final k = _unquote(rawHeader.substring(0, colonIdx).trim());
+          final v = _unquote(rawHeader.substring(colonIdx + 1).trim());
+          if (k.isNotEmpty) {
+            headers.add(KeyValueItem(key: k, value: v));
+          }
+        }
+      }
+      // Cookie -b / --cookie
+      else if ((token == '-b' || token == '--cookie') &&
           i + 1 < tokens.length) {
-        final cookieVal = tokens[++i];
+        final cookieVal = _unquote(tokens[++i]);
         if (cookieVal.isNotEmpty) {
           headers.add(KeyValueItem(key: 'Cookie', value: cookieVal));
         }
-      } else if ((token == '-A' || token == '--user-agent') &&
+      } else if (token.startsWith('--cookie=')) {
+        final cookieVal = _unquote(token.substring(9));
+        if (cookieVal.isNotEmpty) {
+          headers.add(KeyValueItem(key: 'Cookie', value: cookieVal));
+        }
+      } else if (token.startsWith('-b') &&
+          token.length > 2 &&
+          !token.startsWith('--')) {
+        final cookieVal = _unquote(token.substring(2));
+        if (cookieVal.isNotEmpty) {
+          headers.add(KeyValueItem(key: 'Cookie', value: cookieVal));
+        }
+      }
+      // User-Agent -A / --user-agent
+      else if ((token == '-A' || token == '--user-agent') &&
           i + 1 < tokens.length) {
-        final uaVal = tokens[++i];
+        final uaVal = _unquote(tokens[++i]);
         if (uaVal.isNotEmpty) {
           headers.add(KeyValueItem(key: 'User-Agent', value: uaVal));
         }
-      } else if ((token == '-d' ||
+      } else if (token.startsWith('--user-agent=')) {
+        final uaVal = _unquote(token.substring(13));
+        if (uaVal.isNotEmpty) {
+          headers.add(KeyValueItem(key: 'User-Agent', value: uaVal));
+        }
+      } else if (token.startsWith('-A') && token.length > 2) {
+        final uaVal = _unquote(token.substring(2));
+        if (uaVal.isNotEmpty) {
+          headers.add(KeyValueItem(key: 'User-Agent', value: uaVal));
+        }
+      }
+      // Basic 认证 -u / --user
+      else if ((token == '-u' || token == '--user') && i + 1 < tokens.length) {
+        final userPass = _unquote(tokens[++i]);
+        if (userPass.isNotEmpty &&
+            !headers.any((h) => h.key.toLowerCase() == 'authorization')) {
+          final auth = base64Encode(utf8.encode(userPass));
+          headers.add(KeyValueItem(key: 'Authorization', value: 'Basic $auth'));
+        }
+      } else if (token.startsWith('--user=')) {
+        final userPass = _unquote(token.substring(7));
+        if (userPass.isNotEmpty &&
+            !headers.any((h) => h.key.toLowerCase() == 'authorization')) {
+          final auth = base64Encode(utf8.encode(userPass));
+          headers.add(KeyValueItem(key: 'Authorization', value: 'Basic $auth'));
+        }
+      } else if (token.startsWith('-u') &&
+          token.length > 2 &&
+          !token.startsWith('--')) {
+        final userPass = _unquote(token.substring(2));
+        if (userPass.isNotEmpty &&
+            !headers.any((h) => h.key.toLowerCase() == 'authorization')) {
+          final auth = base64Encode(utf8.encode(userPass));
+          headers.add(KeyValueItem(key: 'Authorization', value: 'Basic $auth'));
+        }
+      }
+      // Body 数据 -d / --data / --data-raw 等
+      else if ((token == '-d' ||
               token == '--data' ||
               token == '--data-raw' ||
               token == '--data-binary' ||
@@ -182,26 +301,54 @@ class BrowserRequestParser {
               token == '--data-urlencode') &&
           i + 1 < tokens.length) {
         bodyParts.add(tokens[++i]);
-      } else if ((token == '-F' || token == '--form') &&
+      } else if (token.startsWith('--data=') ||
+          token.startsWith('--data-raw=') ||
+          token.startsWith('--data-binary=') ||
+          token.startsWith('--data-ascii=') ||
+          token.startsWith('--data-urlencode=')) {
+        final eqIdx = token.indexOf('=');
+        bodyParts.add(token.substring(eqIdx + 1));
+      } else if (token.startsWith('-d') &&
+          token.length > 2 &&
+          !token.startsWith('--')) {
+        bodyParts.add(token.substring(2));
+      }
+      // Multipart 表单 -F / --form
+      else if ((token == '-F' || token == '--form') &&
           i + 1 < tokens.length) {
         isMultipart = true;
-        final formStr = tokens[++i];
+        final formStr = _unquote(tokens[++i]);
         final eqIdx = formStr.indexOf('=');
         if (eqIdx > 0) {
-          final k = formStr.substring(0, eqIdx).trim();
-          final v = formStr.substring(eqIdx + 1).trim();
+          final k = _unquote(formStr.substring(0, eqIdx).trim());
+          final v = _unquote(formStr.substring(eqIdx + 1).trim());
           formFields.add(KeyValueItem(key: k, value: v));
         }
-      } else if (token == '--url' && i + 1 < tokens.length) {
-        fullUrl = tokens[++i];
-      } else if (!token.startsWith('-')) {
+      } else if (token.startsWith('--form=')) {
+        isMultipart = true;
+        final formStr = _unquote(token.substring(7));
+        final eqIdx = formStr.indexOf('=');
+        if (eqIdx > 0) {
+          final k = _unquote(formStr.substring(0, eqIdx).trim());
+          final v = _unquote(formStr.substring(eqIdx + 1).trim());
+          formFields.add(KeyValueItem(key: k, value: v));
+        }
+      }
+      // 目标 URL --url
+      else if (token == '--url' && i + 1 < tokens.length) {
+        fullUrl = _unquote(tokens[++i]);
+      } else if (token.startsWith('--url=')) {
+        fullUrl = _unquote(token.substring(6));
+      }
+      // 无前缀位置参数作为 URL
+      else if (!token.startsWith('-')) {
         if (fullUrl.isEmpty &&
             (token.startsWith('http://') ||
                 token.startsWith('https://') ||
                 token.startsWith('/'))) {
-          fullUrl = token;
+          fullUrl = _unquote(token);
         } else if (fullUrl.isEmpty) {
-          fullUrl = token;
+          fullUrl = _unquote(token);
         }
       }
       i++;
@@ -221,7 +368,7 @@ class BrowserRequestParser {
     );
   }
 
-  /// Shell 命令行分词器（支持单引号、双引号、$'...' 及 CMD 特殊占位符 \u0001）
+  /// Shell 命令行分词器（支持单引号、双引号、ANSI-C 引用 $'...' 及反斜杠转义）
   static List<String> _tokenizeShell(String input) {
     final tokens = <String>[];
     final current = StringBuffer();
@@ -234,6 +381,7 @@ class BrowserRequestParser {
     while (i < input.length) {
       final ch = input[i];
 
+      // ANSI-C 引用: $'...'
       if (!inSingleQuote &&
           !inDoubleQuote &&
           !inAnsiQuote &&
@@ -265,12 +413,13 @@ class BrowserRequestParser {
           i++;
           continue;
         } else {
-          current.write(ch == '\u0001' ? '"' : ch);
+          current.write(ch);
           i++;
           continue;
         }
       }
 
+      // 单引号区域
       if (inSingleQuote) {
         if (ch == "'") {
           // 处理 bash '\'' 模式
@@ -282,18 +431,14 @@ class BrowserRequestParser {
           }
           inSingleQuote = false;
         } else {
-          current.write(ch == '\u0001' ? '"' : ch);
+          current.write(ch);
         }
         i++;
         continue;
       }
 
+      // 双引号区域
       if (inDoubleQuote) {
-        if (ch == '\u0001') {
-          current.write('"');
-          i++;
-          continue;
-        }
         if (ch == r'\' && i + 1 < input.length) {
           final next = input[i + 1];
           if (next == '"' || next == r'\' || next == r'$' || next == '`') {
@@ -318,6 +463,12 @@ class BrowserRequestParser {
       } else if (ch == '"') {
         inDoubleQuote = true;
         hasTokenContent = true;
+      } else if (ch == r'\' && i + 1 < input.length) {
+        // 非引号区域的反斜杠转义（如 escaped space \ ）
+        current.write(input[i + 1]);
+        hasTokenContent = true;
+        i += 2;
+        continue;
       } else if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
         if (hasTokenContent || current.isNotEmpty) {
           tokens.add(current.toString());
@@ -325,7 +476,7 @@ class BrowserRequestParser {
           hasTokenContent = false;
         }
       } else {
-        current.write(ch == '\u0001' ? '"' : ch);
+        current.write(ch);
         hasTokenContent = true;
       }
       i++;
@@ -512,7 +663,7 @@ class BrowserRequestParser {
     required bool isMultipart,
   }) {
     // 拆分 URL 与 Query 参数
-    String cleanUrl = fullUrl.trim();
+    String cleanUrl = _unquote(fullUrl.trim());
     final params = <KeyValueItem>[];
     final qIdx = cleanUrl.indexOf('?');
     if (qIdx >= 0) {
@@ -524,11 +675,11 @@ class BrowserRequestParser {
         final k = eqIdx >= 0 ? seg.substring(0, eqIdx) : seg;
         final v = eqIdx >= 0 ? seg.substring(eqIdx + 1) : '';
         if (k.isNotEmpty) {
-          String decodedK = k;
-          String decodedV = v;
+          String decodedK = _unquote(k);
+          String decodedV = _unquote(v);
           try {
-            decodedK = Uri.decodeQueryComponent(k);
-            decodedV = Uri.decodeQueryComponent(v);
+            decodedK = Uri.decodeQueryComponent(decodedK);
+            decodedV = Uri.decodeQueryComponent(decodedV);
           } catch (_) {}
           params.add(KeyValueItem(key: decodedK, value: decodedV));
         }
@@ -543,7 +694,15 @@ class BrowserRequestParser {
           .where((s) => s.trim().isNotEmpty)
           .toList();
       if (segments.isNotEmpty) {
-        suggestedName = segments.last;
+        var rawName = segments.last;
+        final qPos = rawName.indexOf('?');
+        if (qPos >= 0) rawName = rawName.substring(0, qPos);
+        final hPos = rawName.indexOf('#');
+        if (hPos >= 0) rawName = rawName.substring(0, hPos);
+        final cleanedName = _unquote(rawName.trim());
+        if (cleanedName.isNotEmpty) {
+          suggestedName = cleanedName;
+        }
       }
     }
 
@@ -564,32 +723,75 @@ class BrowserRequestParser {
     if (isMultipart) {
       bodyType = BodyType.formData;
     } else if (rawBody.trim().isNotEmpty) {
-      // 尝试解析为 JSON
+      final candidateBody = rawBody.trim();
+      bool jsonSuccess = false;
+
+      // 1. 尝试直接解析为 JSON
       try {
-        final decoded = json.decode(rawBody);
+        var decoded = json.decode(candidateBody);
+        // 如果是已被包裹的 JSON 字符串（如 "{\"a\": 1}"），尝试二次解码
+        if (decoded is String) {
+          try {
+            final innerDecoded = json.decode(decoded);
+            if (innerDecoded is Map || innerDecoded is List) {
+              decoded = innerDecoded;
+            }
+          } catch (_) {}
+        }
         if (decoded is Map || decoded is List) {
           bodyType = BodyType.json;
           rawFormat = 'json';
           finalBodyContent =
               const JsonEncoder.withIndent('  ').convert(decoded);
+          jsonSuccess = true;
         } else {
           bodyType = BodyType.raw;
           rawFormat = 'text';
+          finalBodyContent = decoded.toString();
+          jsonSuccess = true;
         }
-      } catch (_) {
+      } catch (_) {}
+
+      // 2. 若直接解析失败且两端有引号，脱去两端引号再试一次
+      if (!jsonSuccess &&
+          ((candidateBody.startsWith('"') && candidateBody.endsWith('"')) ||
+              (candidateBody.startsWith("'") && candidateBody.endsWith("'")))) {
+        final stripped = _unquote(candidateBody);
+        try {
+          var decoded = json.decode(stripped);
+          if (decoded is String) {
+            try {
+              final innerDecoded = json.decode(decoded);
+              if (innerDecoded is Map || innerDecoded is List) {
+                decoded = innerDecoded;
+              }
+            } catch (_) {}
+          }
+          if (decoded is Map || decoded is List) {
+            bodyType = BodyType.json;
+            rawFormat = 'json';
+            finalBodyContent =
+                const JsonEncoder.withIndent('  ').convert(decoded);
+            jsonSuccess = true;
+          }
+        } catch (_) {}
+      }
+
+      // 3. 非 JSON 格式的回退解析
+      if (!jsonSuccess) {
         if (contentType.contains('application/x-www-form-urlencoded')) {
           bodyType = BodyType.formUrlEncoded;
-          for (final seg in rawBody.split('&')) {
+          for (final seg in candidateBody.split('&')) {
             if (seg.trim().isEmpty) continue;
             final eqIdx = seg.indexOf('=');
             final k = eqIdx >= 0 ? seg.substring(0, eqIdx) : seg;
             final v = eqIdx >= 0 ? seg.substring(eqIdx + 1) : '';
             if (k.isNotEmpty) {
-              String dk = k;
-              String dv = v;
+              String dk = _unquote(k);
+              String dv = _unquote(v);
               try {
-                dk = Uri.decodeQueryComponent(k);
-                dv = Uri.decodeQueryComponent(v);
+                dk = Uri.decodeQueryComponent(dk);
+                dv = Uri.decodeQueryComponent(dv);
               } catch (_) {}
               finalFormFields.add(KeyValueItem(key: dk, value: dv));
             }
