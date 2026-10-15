@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../models/api_request.dart';
 
@@ -269,7 +270,7 @@ class KeyValueEditor extends StatelessWidget {
                             initialValue: item.key,
                             style: TextStyle(
                               fontSize: 12.5,
-                              fontFamily: 'Consolas',
+                              fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                               color: rowTextColor,
                               fontWeight: FontWeight.w500,
                             ),
@@ -351,7 +352,7 @@ class KeyValueEditor extends StatelessWidget {
                                         initialValue: item.value,
                                         style: TextStyle(
                                           fontSize: 12,
-                                          fontFamily: 'Consolas',
+                                          fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                           color: rowTextColor,
                                         ),
                                         decoration: const InputDecoration(
@@ -413,7 +414,7 @@ class KeyValueEditor extends StatelessWidget {
                                   initialValue: item.value,
                                   style: TextStyle(
                                     fontSize: 12.5,
-                                    fontFamily: 'Consolas',
+                                    fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                     color: rowTextColor,
                                   ),
                                   decoration: InputDecoration(

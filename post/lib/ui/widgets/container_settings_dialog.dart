@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app_fonts.dart';
 import '../../models/api_request.dart';
 import 'key_value_editor.dart';
 import 'json_syntax_highlighter.dart';
@@ -225,7 +226,7 @@ console.log("执行【${widget.container.name}】公共前置处理");
                             maxLines: null,
                             expands: true,
                             style: const TextStyle(
-                                fontFamily: 'monospace', fontSize: 12),
+                                fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback, fontSize: 12),
                             decoration: const InputDecoration(
                               hintText:
                                   '// 编写公共前置脚本...\npm.request.headers.add({ ... });',
@@ -273,7 +274,7 @@ pm.test("响应耗时必须小于 2000ms", function () {
                             maxLines: null,
                             expands: true,
                             style: const TextStyle(
-                                fontFamily: 'monospace', fontSize: 12),
+                                fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback, fontSize: 12),
                             decoration: const InputDecoration(
                               hintText:
                                   '// 编写公共测试脚本...\npm.test("公共断言", function() { ... });',

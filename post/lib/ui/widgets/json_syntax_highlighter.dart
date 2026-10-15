@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../app_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -31,7 +32,7 @@ class JsonSyntaxHighlightController extends TextEditingController {
   }) {
     final baseStyle = style ??
         const TextStyle(
-          fontFamily: 'Consolas',
+          fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
           fontSize: 13,
           color: defaultColor,
           height: 1.45,
@@ -148,7 +149,7 @@ class JsSyntaxHighlightController extends TextEditingController {
   }) {
     final baseStyle = style ??
         const TextStyle(
-          fontFamily: 'Consolas',
+          fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
           fontSize: 12.5,
           color: defaultColor,
           height: 1.45,
@@ -598,7 +599,7 @@ class _JsonHighlightedViewerState extends State<JsonHighlightedViewer> {
   Widget build(BuildContext context) {
     final baseStyle = widget.style ??
         const TextStyle(
-          fontFamily: 'Consolas',
+          fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
           fontSize: 13,
           color: JsonSyntaxHighlightController.defaultColor,
           height: 1.45,
@@ -1375,7 +1376,7 @@ class _ResponseTableViewerState extends State<ResponseTableViewer> {
                           text: kStr,
                           style: const TextStyle(
                             fontSize: 12,
-                            fontFamily: 'Consolas',
+                            fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF1D4ED8),
                           ),
@@ -1393,7 +1394,7 @@ class _ResponseTableViewerState extends State<ResponseTableViewer> {
                           text: vStr,
                           style: const TextStyle(
                             fontSize: 12,
-                            fontFamily: 'Consolas',
+                            fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                             color: Color(0xFF1E293B),
                           ),
                           queryLower: queryLower,
@@ -1560,7 +1561,7 @@ class _ResponseTableViewerState extends State<ResponseTableViewer> {
             text: col,
             style: const TextStyle(
               fontSize: 11.5,
-              fontFamily: 'Consolas',
+              fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
               fontWeight: FontWeight.w700,
               color: Color(0xFF1E293B),
             ),
@@ -1598,7 +1599,7 @@ class _ResponseTableViewerState extends State<ResponseTableViewer> {
                     '${rowIdx + 1}',
                     style: const TextStyle(
                       fontSize: 11,
-                      fontFamily: 'Consolas',
+                      fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                       color: Color(0xFF94A3B8),
                     ),
                   ),
@@ -1621,7 +1622,7 @@ class _ResponseTableViewerState extends State<ResponseTableViewer> {
                           : (col == 'value' ? _formatCellValue(item) : ''),
                       style: const TextStyle(
                         fontSize: 12,
-                        fontFamily: 'Consolas',
+                        fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                         color: Color(0xFF334155),
                       ),
                       queryLower: queryLower,
@@ -1744,7 +1745,7 @@ class _ResponseTableViewerState extends State<ResponseTableViewer> {
                     size: 15, color: Color(0xFF2563EB)),
                 style: const TextStyle(
                   fontSize: 11.5,
-                  fontFamily: 'Consolas',
+                  fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF1D4ED8),
                 ),
@@ -1776,7 +1777,7 @@ class _ResponseTableViewerState extends State<ResponseTableViewer> {
               activeCandidate?.label ?? '根对象 · $rowCount 项',
               style: const TextStyle(
                 fontSize: 11,
-                fontFamily: 'Consolas',
+                fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF1D4ED8),
               ),

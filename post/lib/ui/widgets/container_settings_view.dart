@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app_fonts.dart';
 import '../../models/api_request.dart';
 import '../../models/environment.dart';
 import 'key_value_editor.dart';
@@ -637,7 +638,7 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
                                     initialValue: _variables[i].key,
                                     style: TextStyle(
                                       fontSize: 12.5,
-                                      fontFamily: 'Consolas',
+                                      fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                       fontWeight: FontWeight.w500,
                                       color: _variables[i].isEnabled
                                           ? const Color(0xFF0F172A)
@@ -677,7 +678,7 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
                                     initialValue: _variables[i].value,
                                     style: TextStyle(
                                       fontSize: 12.5,
-                                      fontFamily: 'Consolas',
+                                      fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                       color: _variables[i].isEnabled
                                           ? const Color(0xFF0F172A)
                                           : const Color(0xFF94A3B8),
@@ -877,7 +878,7 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
               expands: true,
               textAlignVertical: TextAlignVertical.top,
               style: const TextStyle(
-                fontFamily: 'Consolas',
+                fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                 fontSize: 12.5,
                 height: 1.5,
                 color: Color(0xFF0F172A),
@@ -969,7 +970,7 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
               expands: true,
               textAlignVertical: TextAlignVertical.top,
               style: const TextStyle(
-                fontFamily: 'Consolas',
+                fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                 fontSize: 12.5,
                 height: 1.5,
                 color: Color(0xFF0F172A),

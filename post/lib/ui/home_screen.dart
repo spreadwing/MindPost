@@ -22,6 +22,7 @@ import 'widgets/ai_copilot_drawer.dart';
 import 'widgets/api_tree_view.dart';
 import 'widgets/container_settings_view.dart';
 import 'widgets/json_syntax_highlighter.dart';
+import 'app_fonts.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -925,23 +926,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: const Color(0xFFBFDBFE), width: 0.8),
-                ),
-                child: const Text(
-                  'AI Native',
-                  style: TextStyle(
-                    color: Color(0xFF2563EB),
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
             ],
           ),
 
@@ -997,11 +981,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             child: Text(
                               v.key,
-                              style: const TextStyle(
+                              style: AppFonts.code(
                                 fontSize: 10.5,
-                                fontFamily: 'Consolas',
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF2563EB),
+                                color: const Color(0xFF2563EB),
                               ),
                             ),
                           ),
@@ -2896,11 +2879,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           alignment: Alignment.center,
                           child: Text(
                             item['keys']!,
-                            style: const TextStyle(
+                            style: AppFonts.code(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              fontFamily: 'Consolas',
-                              color: Color(0xFF1E293B),
+                              color: const Color(0xFF1E293B),
                             ),
                           ),
                         ),
@@ -3490,7 +3472,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: TextField(
             controller: controller,
             obscureText: obscureText,
-            style: const TextStyle(fontSize: 12, fontFamily: 'Consolas'),
+            style: AppFonts.code(fontSize: 12),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle:
@@ -4170,7 +4152,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontSize: 10.5,
-                                        fontFamily: 'Consolas',
+                                        fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                         color: subColor,
                                       ),
                                     ),
@@ -4180,7 +4162,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     timeText,
                                     style: TextStyle(
                                       fontSize: 10,
-                                      fontFamily: 'Consolas',
+                                      fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                       color: subColor.withValues(alpha: 0.85),
                                     ),
                                   ),
@@ -4469,7 +4451,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: SelectableText(
                   curlText,
                   style: const TextStyle(
-                    fontFamily: 'Consolas',
+                    fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                     fontSize: 12,
                     height: 1.5,
                     color: Color(0xFFE2E8F0),
@@ -4905,7 +4887,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         controller: _urlController,
                         style: const TextStyle(
                           fontSize: 13,
-                          fontFamily: 'monospace',
+                          fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                           color: Color(0xFF0F172A),
                         ),
                         decoration: const InputDecoration(
@@ -5050,7 +5032,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           style: const TextStyle(
                             fontSize: 11.5,
                             color: Color(0xFF1E293B),
-                            fontFamily: 'monospace',
+                            fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                             fontWeight: FontWeight.w500,
                           ),
                           maxLines: 1,
@@ -5488,7 +5470,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     textAlign: TextAlign.left,
                                     textAlignVertical: TextAlignVertical.top,
                                     style: const TextStyle(
-                                      fontFamily: 'Consolas',
+                                      fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                       fontSize: 13,
                                       height: 1.45,
                                     ),
@@ -5570,7 +5552,7 @@ console.log("签名计算完成: " + sign);
                                   textAlign: TextAlign.left,
                                   textAlignVertical: TextAlignVertical.top,
                                   style: const TextStyle(
-                                    fontFamily: 'Consolas',
+                                    fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                     fontSize: 12.5,
                                     height: 1.45,
                                     color: Color(0xFF0F172A),
@@ -5650,7 +5632,7 @@ pm.test("Status code is 200", function () {
                                   textAlign: TextAlign.left,
                                   textAlignVertical: TextAlignVertical.top,
                                   style: const TextStyle(
-                                    fontFamily: 'Consolas',
+                                    fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                     fontSize: 12.5,
                                     height: 1.45,
                                     color: Color(0xFF0F172A),
@@ -6203,7 +6185,7 @@ pm.test("Status code is 200", function () {
                                                           : '无匹配',
                                                       style: TextStyle(
                                                         fontSize: 11,
-                                                        fontFamily: 'Consolas',
+                                                        fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                                         fontWeight:
                                                             FontWeight.w600,
                                                         color: _responseSearchMatchCount >
@@ -6375,8 +6357,7 @@ pm.test("Status code is 200", function () {
                                                           },
                                                           style:
                                                               const TextStyle(
-                                                            fontFamily:
-                                                                'Consolas',
+                                                            fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                                             fontSize: 12.5,
                                                             height: 1.45,
                                                           ),
@@ -6508,8 +6489,7 @@ pm.test("Status code is 200", function () {
                                                                             .w600,
                                                                     fontSize:
                                                                         12,
-                                                                    fontFamily:
-                                                                        'Consolas',
+                                                                    fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                                                     color: Color(
                                                                         0xFF1E293B),
                                                                   ),
@@ -6531,8 +6511,7 @@ pm.test("Status code is 200", function () {
                                                                   style: const TextStyle(
                                                                     fontSize:
                                                                         12,
-                                                                    fontFamily:
-                                                                        'Consolas',
+                                                                    fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                                                     color: Color(
                                                                         0xFF334155),
                                                                   ),
@@ -6607,7 +6586,7 @@ pm.test("Status code is 200", function () {
                                                 child: SelectableText(
                                                   response.consoleLogs[idx],
                                                   style: const TextStyle(
-                                                    fontFamily: 'monospace',
+                                                    fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                                     fontSize: 11,
                                                     color: Color(0xFF334155),
                                                   ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../app_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/api_request.dart';
@@ -1037,7 +1038,7 @@ class _BrowserImportDialogState extends State<BrowserImportDialog> {
                 textAlignVertical: TextAlignVertical.top,
                 style: const TextStyle(
                   fontSize: 12,
-                  fontFamily: 'Consolas',
+                  fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                   height: 1.45,
                   color: Color(0xFF0F172A),
                 ),
@@ -1093,7 +1094,7 @@ class _BrowserImportDialogState extends State<BrowserImportDialog> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 11.5,
-                              fontFamily: 'Consolas',
+                              fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                               color: _importUrl
                                   ? const Color(0xFF1E293B)
                                   : const Color(0xFF94A3B8),

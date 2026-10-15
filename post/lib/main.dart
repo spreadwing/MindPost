@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'ui/app_fonts.dart';
 import 'ui/home_screen.dart';
 
 void main() {
@@ -66,8 +67,8 @@ class MindPostApp extends StatelessWidget {
           textStyle: const TextStyle(color: Colors.white, fontSize: 11),
           waitDuration: const Duration(milliseconds: 400),
         ),
-        fontFamily: 'MiSans',
-        fontFamilyFallback: const ['Microsoft YaHei', 'PingFang SC', 'sans-serif'],
+        fontFamily: AppFonts.uiFamily,
+        fontFamilyFallback: AppFonts.uiFallback,
       ),
       home: const HomeScreen(),
     );

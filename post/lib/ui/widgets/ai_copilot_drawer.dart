@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../app_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../models/api_request.dart';
@@ -229,7 +230,7 @@ pm.test("Response contains data", function () {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 10,
-                        fontFamily: 'Consolas',
+                        fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF2563EB),
                       ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../app_fonts.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -184,7 +185,7 @@ class _McpPanelState extends State<McpPanel> {
                                   'http://127.0.0.1:${widget.mcpServerService.port}/sse',
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontFamily: 'monospace'),
+                                      fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback),
                                 ),
                               ],
                             ),
@@ -300,7 +301,7 @@ class _McpPanelState extends State<McpPanel> {
                       controller: _paramsController,
                       maxLines: 3,
                       style: const TextStyle(
-                          fontFamily: 'monospace', fontSize: 12),
+                          fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback, fontSize: 12),
                       decoration: const InputDecoration(
                         labelText: '入参 JSON',
                         border: OutlineInputBorder(),
@@ -320,7 +321,7 @@ class _McpPanelState extends State<McpPanel> {
                         child: Text(
                           _toolOutput,
                           style: const TextStyle(
-                              fontFamily: 'monospace', fontSize: 11),
+                              fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback, fontSize: 11),
                         ),
                       ),
                     ],
@@ -369,7 +370,7 @@ class _McpPanelState extends State<McpPanel> {
                             subtitle: Text(
                               'Params: ${json.encode(log.params)} \nResult: ${log.resultSummary}',
                               style: const TextStyle(
-                                  fontSize: 11, fontFamily: 'monospace'),
+                                  fontSize: 11, fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),

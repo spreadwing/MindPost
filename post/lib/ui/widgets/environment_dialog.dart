@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app_fonts.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/environment.dart';
 import '../../models/workspace.dart';
@@ -189,7 +190,7 @@ class _EnvironmentDialogState extends State<EnvironmentDialog> {
                           child: TextField(
                             controller: valueController,
                             style: const TextStyle(
-                                fontSize: 12.5, fontFamily: 'Consolas'),
+                                fontSize: 12.5, fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback),
                             decoration: const InputDecoration(
                               hintText: '枚举值，如 http://127.0.0.1:8080',
                               isDense: true,
@@ -431,7 +432,7 @@ class _EnvironmentDialogState extends State<EnvironmentDialog> {
                                               initialValue: opt.value,
                                               style: const TextStyle(
                                                 fontSize: 12,
-                                                fontFamily: 'Consolas',
+                                                fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                                 color: Color(0xFF1E293B),
                                               ),
                                               decoration: const InputDecoration(
@@ -1047,7 +1048,7 @@ class _EnvironmentDialogState extends State<EnvironmentDialog> {
                             initialValue: item.key,
                             style: const TextStyle(
                               fontSize: 12.5,
-                              fontFamily: 'Consolas',
+                              fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: const InputDecoration(
@@ -1256,7 +1257,7 @@ class _EnvironmentDialogState extends State<EnvironmentDialog> {
                                         obscureText: item.isSecret,
                                         style: const TextStyle(
                                           fontSize: 12.5,
-                                          fontFamily: 'Consolas',
+                                          fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                         ),
                                         decoration: const InputDecoration(
                                           hintText: '输入变量值',

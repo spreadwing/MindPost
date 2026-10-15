@@ -424,7 +424,7 @@ console.log("准备发送创建订单请求，当前环境 baseUrl: " + pm.envir
         KeyValueItem(key: 'clientVersion', value: '1.2.0', type: 'text'),
         KeyValueItem(
             key: 'fontAsset',
-            value: 'assets/fonts/MiSans-Regular.ttf',
+            value: 'assets/fonts/Inter-Regular.ttf',
             type: 'file'),
       ],
     );
