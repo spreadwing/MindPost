@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <filter id="shadow1" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0F172A" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- 底板容器 (macOS squircle / Windows rounded tile) -->
+  <rect width="512" height="512" rx="115" fill="url(#bg1)"/>
+  
+  <!-- 思维导图发散轨迹 (Mind Nodes) -->
+  <path d="M120 370 L200 310 M120 250 L200 310 M200 310 L280 250" stroke="#93C5FD" stroke-width="14" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="120" cy="370" r="16" fill="#BFDBFE"/>
+  <circle cx="120" cy="250" r="16" fill="#BFDBFE"/>
+  <circle cx="200" cy="310" r="20" fill="#E0F2FE"/>
+
+  <!-- 扁平化折纸机 (Post Element) -->
+  <g filter="url(#shadow1)">
+    <!-- 左翼背光面 -->
+    <polygon points="405,115 180,270 280,310" fill="#E0F2FE"/>
+    <!-- 主折叠翼 (冰蓝过渡) -->
+    <polygon points="405,115 280,310 320,380" fill="#BAE6FD"/>
+    <!-- 右翼主光面 (极简雪白) -->
+    <polygon points="405,115 280,310 240,410" fill="#FFFFFF"/>
+    <!-- 尖端与核心折痕阴影 -->
+    <polygon points="405,115 280,310 210,310" fill="#7DD3FC" opacity="0.6"/>
+  </g>
+</svg>

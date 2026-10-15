@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- 图中同款层叠柔和暗部阴影 -->
+    <filter id="foldShadowA" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="-4" dy="10" stdDeviation="12" flood-color="#002438" flood-opacity="0.32"/>
+    </filter>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- 1. 参考图同款：纯白底板 + 极细浅灰蓝外边框 -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="6" filter="url(#cardShadow)"/>
+
+  <!-- 2. 参考图三色层叠纸飞机 (深蓝 #004C74, 青蓝 #01B6E8, 蔚蓝 #0288D1, 白点 #FFFFFF) -->
+  <g transform="translate(0, 0)">
+    <!-- 底层机腹/左翼背光面 (深蓝 #004C74) -->
+    <path d="M 380 135 
+             L 165 310 
+             C 152 320 152 340 165 350 
+             C 178 360 198 358 208 345 
+             L 260 280 
+             Z" 
+          fill="#004C74"/>
+
+    <!-- 左翼主折面 (中阶蔚蓝 #0288D1) -->
+    <polygon points="380,135 140,265 250,280" fill="#0288D1"/>
+
+    <!-- 顶层主翼/对角折带 (明亮青蓝 #01B6E8) 带圆角胶囊与层叠阴影 -->
+    <g filter="url(#foldShadowA)">
+      <!-- 纯正青蓝主迎风面 -->
+      <path d="M 380 135 
+               L 250 280 
+               L 270 365 
+               C 275 382 298 388 310 375 
+               C 318 366 385 145 385 140 
+               Z" 
+            fill="#01B6E8"/>
+    </g>
+
+    <!-- 右侧副翼 (高光蔚蓝 #0288D1) -->
+    <path d="M 380 135 
+             L 250 280 
+             L 280 375 
+             C 285 390 305 390 315 378 
+             Z" 
+          fill="#0288D1" opacity="0.9"/>
+
+    <!-- 参考图标志性灵魂元素：右侧小圆点白铆钉 (White Rivet #FFFFFF) -->
+    <circle cx="288" cy="355" r="13" fill="#FFFFFF"/>
+
+    <!-- 参考图左翼特征小圆点 (Cyan Accent Dot) -->
+    <circle cx="180" cy="285" r="7" fill="#01B6E8"/>
+  </g>
+</svg>

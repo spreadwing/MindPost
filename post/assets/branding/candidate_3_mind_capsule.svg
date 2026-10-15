@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <filter id="shadow3" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1E3A8A" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <!-- 底板容器 -->
+  <rect width="512" height="512" rx="115" fill="url(#bg3)"/>
+
+  <!-- 升腾思维网络 (Mind Neurons) -->
+  <path d="M256 260 L180 155" stroke="#BFDBFE" stroke-width="12" stroke-linecap="round"/>
+  <path d="M256 260 L256 125" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round"/>
+  <path d="M256 260 L332 155" stroke="#BFDBFE" stroke-width="12" stroke-linecap="round"/>
+
+  <circle cx="180" cy="150" r="18" fill="#BAE6FD"/>
+  <circle cx="256" cy="115" r="26" fill="#FFFFFF"/>
+  <circle cx="332" cy="150" r="18" fill="#BAE6FD"/>
+
+  <!-- 极简信封主体 (Post Capsule) -->
+  <g filter="url(#shadow3)">
+    <rect x="136" y="240" width="240" height="150" rx="24" fill="#FFFFFF"/>
+    <!-- 信封折痕细节 -->
+    <path d="M 140 252 L 256 325 L 372 252" stroke="#DBEAFE" stroke-width="12" fill="none" stroke-linejoin="round"/>
+  </g>
+</svg>

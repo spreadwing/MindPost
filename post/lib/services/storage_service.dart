@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import '../models/workspace.dart';
 import '../models/api_collection.dart';
 import '../models/api_request.dart';
+import '../models/s3_sync_config.dart';
 
 class StorageService {
   final Directory? _customDir;
@@ -16,26 +17,70 @@ class StorageService {
     if (customDir != null) {
       return customDir.path;
     }
-    // 优先检查本地当前运行目录下的 .postmcp
-    final currentDirPostmcp = Directory(p.join(Directory.current.path, '.postmcp'));
-    if (await currentDirPostmcp.exists()) {
+    // 优先检查本地当前运行目录下的 .mindpost
+    final currentDirMindpost =
+        Directory(p.join(Directory.current.path, '.mindpost'));
+    if (await currentDirMindpost.exists()) {
       return Directory.current.path;
     }
-    final docDir = await getApplicationDocumentsDirectory();
-    return p.join(docDir.path, 'PostMCP');
+    final userProfile =
+        Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
+    if (userProfile != null && userProfile.isNotEmpty) {
+      return p.join(userProfile, 'Documents', 'MindPost');
+    }
+    try {
+      final docDir = await getApplicationDocumentsDirectory()
+          .timeout(const Duration(milliseconds: 500));
+      return p.join(docDir.path, 'MindPost');
+    } catch (_) {
+      return Directory.current.path;
+    }
+  }
+
+  Future<void> _migrateLegacyIfNeeded(Directory mindpostDir) async {
+    if (await mindpostDir.exists()) return;
+    final userProfile =
+        Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
+    if (userProfile == null || userProfile.isEmpty) return;
+    final legacyDir =
+        Directory(p.join(userProfile, 'Documents', 'PostMCP', '.postmcp'));
+    if (await legacyDir.exists()) {
+      await mindpostDir.create(recursive: true);
+      await for (final entity in legacyDir.list()) {
+        if (entity is File) {
+          final targetPath = p.join(mindpostDir.path, p.basename(entity.path));
+          await entity.copy(targetPath);
+        }
+      }
+    }
   }
 
   /// 加载工作区配置（若无则创建默认 Demo 工作区）
   Future<Workspace> loadWorkspace() async {
     try {
       final baseDirPath = await _getWorkspaceDirPath();
-      final postmcpDir = Directory(p.join(baseDirPath, '.postmcp'));
-      final workspaceFile = File(p.join(postmcpDir.path, 'workspace.json'));
+      final mindpostDir = Directory(p.join(baseDirPath, '.mindpost'));
+      await _migrateLegacyIfNeeded(mindpostDir);
+      final workspaceFile = File(p.join(mindpostDir.path, 'workspace.json'));
+      final s3ConfigFile = File(p.join(mindpostDir.path, 's3_config.json'));
+
+      S3SyncConfig? localS3Config;
+      if (await s3ConfigFile.exists()) {
+        try {
+          final s3Raw = await s3ConfigFile.readAsString();
+          localS3Config =
+              S3SyncConfig.fromJson(json.decode(s3Raw) as Map<String, dynamic>);
+        } catch (_) {}
+      }
 
       if (await workspaceFile.exists()) {
         final content = await workspaceFile.readAsString();
         final jsonMap = json.decode(content) as Map<String, dynamic>;
-        return Workspace.fromJson(jsonMap);
+        final ws = Workspace.fromJson(jsonMap);
+        if (localS3Config != null && localS3Config.isConfigured) {
+          ws.s3Config = localS3Config;
+        }
+        return ws;
       }
     } catch (_) {
       // 容错降级
@@ -50,14 +95,18 @@ class StorageService {
   Future<void> saveWorkspace(Workspace workspace) async {
     try {
       final baseDirPath = await _getWorkspaceDirPath();
-      final postmcpDir = Directory(p.join(baseDirPath, '.postmcp'));
-      if (!await postmcpDir.exists()) {
-        await postmcpDir.create(recursive: true);
+      final mindpostDir = Directory(p.join(baseDirPath, '.mindpost'));
+      if (!await mindpostDir.exists()) {
+        await mindpostDir.create(recursive: true);
       }
 
-      final workspaceFile = File(p.join(postmcpDir.path, 'workspace.json'));
+      final workspaceFile = File(p.join(mindpostDir.path, 'workspace.json'));
       const encoder = JsonEncoder.withIndent('  ');
       await workspaceFile.writeAsString(encoder.convert(workspace.toJson()));
+
+      final s3ConfigFile = File(p.join(mindpostDir.path, 's3_config.json'));
+      await s3ConfigFile
+          .writeAsString(encoder.convert(workspace.s3Config.toJson()));
     } catch (_) {
       // 写入失败静默防护
     }

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="shadowRef4" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="-2" dy="16" stdDeviation="20" flood-color="#001824" flood-opacity="0.38"/>
+    </filter>
+    <filter id="wingShadowRef4" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="-4" dy="8" stdDeviation="10" flood-color="#00293D" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <!-- 底板：图中同款深邃海青蓝 (#004C74，纯色无渐变) -->
+  <rect width="512" height="512" rx="115" fill="#004C74"/>
+
+  <!-- 候选4双层悬浮折纸飞机 (图中纯白 + 明亮青蓝 #01B6E8 组合) -->
+  <g filter="url(#shadowRef4)">
+    <!-- 1. 下层折叠底座 (图中同款蔚蓝 #0288D1) -->
+    <polygon points="380,130 220,330 180,310" fill="#0288D1"/>
+    
+    <!-- 2. 左机翼底层 (图中同款明亮青蓝 #01B6E8，极其抢眼) -->
+    <polygon points="380,130 135,285 240,290" fill="#01B6E8"/>
+
+    <!-- 3. 右主翼 (悬浮于上层，100% 极纯雪白 #FFFFFF + 细腻图层自投影) -->
+    <polygon points="380,130 240,290 280,380" fill="#FFFFFF" filter="url(#wingShadowRef4)"/>
+
+    <!-- 4. 纯白机翼上的微型圆孔特征 (如同参考图白铆钉) -->
+    <circle cx="282" cy="340" r="11" fill="#004C74"/>
+  </g>
+</svg>

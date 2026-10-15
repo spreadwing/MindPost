@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:path/path.dart' as p;
 import '../models/api_request.dart';
 import '../models/api_response.dart';
 import '../models/workspace.dart';
@@ -36,7 +38,7 @@ class HttpClientService {
           ),
         );
 
-  /// 执行完整的请求生命周期流水线
+  /// 执行完整的请求生命周期流水线（支持父级集合与目录级联继承）
   Future<ExecutionResult> executeRequest({
     required ApiRequest request,
     required Workspace workspace,
@@ -46,22 +48,57 @@ class HttpClientService {
     final startTime = DateTime.now();
     final allConsoleLogs = <String>[];
 
-    // 1. 构建初始级联变量表
+    // 0. 查找目标请求所属的父容器链 (Root Collection -> 各级 Folder)
+    List<dynamic> parentChain = [];
+    if (collection != null) {
+      parentChain = collection.findParentChainForRequest(request.id);
+    } else {
+      for (final col in workspace.collections) {
+        if (col.findRequestById(request.id) != null) {
+          parentChain = col.findParentChainForRequest(request.id);
+          break;
+        }
+      }
+    }
+
+    // 1. 构建初始级联变量表 (Global -> Environment -> Containers Chain -> Request)
     final envVars = VariableResolver.buildVariableMap(
       workspace: workspace,
       collection: collection,
+      parentContainers: parentChain,
     );
     final globalVars = {
       for (final g in workspace.globalVariables)
         if (g.isEnabled) g.key: g.value
     };
 
-    // 2. 执行前置脚本 (Pre-request Script)
+    // 2. 依次执行父容器链与请求自身的前置脚本 (Pre-request Script)
     Map<String, String> updatedEnv = {};
     List<KeyValueItem> extraHeaders = [];
     List<KeyValueItem> extraParams = [];
 
+    // 2.1 自顶向下执行父容器链（集合/目录）前置脚本
+    for (final container in parentChain) {
+      final cScript = container.preRequestScript as String?;
+      if (cScript != null && cScript.trim().isNotEmpty) {
+        allConsoleLogs.add('[PRE-SCRIPT] 执行容器【${container.name}】前置脚本');
+        final scriptResult = await ScriptEngine.executePreRequestScript(
+          script: cScript,
+          request: request,
+          environmentVariables: envVars,
+          globalVariables: globalVars,
+        );
+        allConsoleLogs.addAll(scriptResult.consoleLogs);
+        updatedEnv.addAll(scriptResult.updatedEnvironmentVariables);
+        extraHeaders.addAll(scriptResult.additionalHeaders);
+        extraParams.addAll(scriptResult.additionalParams);
+        envVars.addAll(scriptResult.updatedEnvironmentVariables);
+      }
+    }
+
+    // 2.2 执行当前请求自身的前置脚本
     if (request.preRequestScript.trim().isNotEmpty) {
+      allConsoleLogs.add('[PRE-SCRIPT] 执行请求【${request.name}】前置脚本');
       final scriptResult = await ScriptEngine.executePreRequestScript(
         script: request.preRequestScript,
         request: request,
@@ -69,24 +106,37 @@ class HttpClientService {
         globalVariables: globalVars,
       );
       allConsoleLogs.addAll(scriptResult.consoleLogs);
-      updatedEnv = scriptResult.updatedEnvironmentVariables;
-      extraHeaders = scriptResult.additionalHeaders;
-      extraParams = scriptResult.additionalParams;
-
-      // 实时将脚本修改的变量合并入本次请求的临时变量上下文
-      envVars.addAll(updatedEnv);
+      updatedEnv.addAll(scriptResult.updatedEnvironmentVariables);
+      extraHeaders.addAll(scriptResult.additionalHeaders);
+      extraParams.addAll(scriptResult.additionalParams);
+      envVars.addAll(scriptResult.updatedEnvironmentVariables);
     }
 
     // 3. 解析最终 URL
     final activeBaseUrl = workspace.activeEnvironment?.baseUrl;
-    final finalUrl = VariableResolver.resolveUrl(
+    String finalUrl = VariableResolver.resolveUrl(
       rawUrl: request.url,
       variables: envVars,
       currentBaseUrl: activeBaseUrl,
     );
 
-    // 4. 解析 Query Parameters
+    // 4. 解析 Query Parameters（若 URL 已带查询串且与 Params 列表同时存在，自动合并去重）
     final queryParams = <String, dynamic>{};
+    final qMarkIdx = finalUrl.indexOf('?');
+    if (qMarkIdx >= 0) {
+      final rawQuery = finalUrl.substring(qMarkIdx + 1);
+      finalUrl = finalUrl.substring(0, qMarkIdx);
+      for (final seg in rawQuery.split('&')) {
+        if (seg.trim().isEmpty) continue;
+        final eqIdx = seg.indexOf('=');
+        final k = eqIdx >= 0 ? seg.substring(0, eqIdx) : seg;
+        final v = eqIdx >= 0 ? seg.substring(eqIdx + 1) : '';
+        if (k.isNotEmpty) {
+          queryParams[Uri.decodeQueryComponent(k)] =
+              Uri.decodeQueryComponent(v);
+        }
+      }
+    }
     for (final p in [...request.params, ...extraParams]) {
       if (p.isEnabled && p.key.isNotEmpty) {
         queryParams[VariableResolver.interpolate(p.key, envVars)] =
@@ -94,13 +144,29 @@ class HttpClientService {
       }
     }
 
-    // 5. 解析 Headers
-    final headers = <String, dynamic>{};
+    // 5. 级联继承父容器公共 Headers，随后由请求自身 Headers 覆盖
+    final inheritedHeaders = <String, KeyValueItem>{};
+    for (final container in parentChain) {
+      final cHeaders = container.headers as List<KeyValueItem>?;
+      if (cHeaders != null) {
+        for (final h in cHeaders) {
+          if (h.isEnabled && h.key.isNotEmpty) {
+            inheritedHeaders[h.key] = h;
+          }
+        }
+      }
+    }
+    // 请求自身 Headers 覆盖父级同名 Header
     for (final h in [...request.headers, ...extraHeaders]) {
       if (h.isEnabled && h.key.isNotEmpty) {
-        headers[VariableResolver.interpolate(h.key, envVars)] =
-            VariableResolver.interpolate(h.value, envVars);
+        inheritedHeaders[h.key] = h;
       }
+    }
+
+    final headers = <String, dynamic>{};
+    for (final h in inheritedHeaders.values) {
+      headers[VariableResolver.interpolate(h.key, envVars)] =
+          VariableResolver.interpolate(h.value, envVars);
     }
 
     // 6. 解析 Request Body
@@ -116,10 +182,26 @@ class HttpClientService {
         finalResolvedBody =
             VariableResolver.interpolate(request.bodyContent, envVars);
         bodyData = finalResolvedBody;
-        if (request.bodyType == BodyType.json &&
-            !headers.containsKey('Content-Type') &&
+        if (!headers.containsKey('Content-Type') &&
             !headers.containsKey('content-type')) {
-          headers['Content-Type'] = 'application/json';
+          switch (request.rawFormat.toLowerCase()) {
+            case 'xml':
+              headers['Content-Type'] = 'application/xml';
+              break;
+            case 'html':
+              headers['Content-Type'] = 'text/html';
+              break;
+            case 'javascript':
+              headers['Content-Type'] = 'application/javascript';
+              break;
+            case 'text':
+              headers['Content-Type'] = 'text/plain';
+              break;
+            case 'json':
+            default:
+              headers['Content-Type'] = 'application/json';
+              break;
+          }
         }
         break;
       case BodyType.formUrlEncoded:
@@ -138,12 +220,31 @@ class HttpClientService {
         final map = <String, dynamic>{};
         for (final f in request.formDataFields) {
           if (f.isEnabled && f.key.isNotEmpty) {
-            map[VariableResolver.interpolate(f.key, envVars)] =
-                VariableResolver.interpolate(f.value, envVars);
+            final fieldKey = VariableResolver.interpolate(f.key, envVars);
+            final fieldVal = VariableResolver.interpolate(f.value, envVars);
+
+            if (f.type == 'file' && fieldVal.isNotEmpty) {
+              final file = File(fieldVal);
+              if (await file.exists()) {
+                map[fieldKey] = await MultipartFile.fromFile(
+                  fieldVal,
+                  filename: p.basename(fieldVal),
+                );
+              } else {
+                map[fieldKey] = fieldVal;
+              }
+            } else {
+              map[fieldKey] = fieldVal;
+            }
           }
         }
         bodyData = FormData.fromMap(map);
-        finalResolvedBody = json.encode(map);
+        finalResolvedBody = json.encode({
+          for (final entry in map.entries)
+            entry.key: entry.value is MultipartFile
+                ? '[File: ${(entry.value as MultipartFile).filename}]'
+                : entry.value
+        });
         break;
     }
 
@@ -171,9 +272,35 @@ class HttpClientService {
       final bodyStr = response.data?.toString() ?? '';
       final sizeBytes = utf8.encode(bodyStr).length;
 
-      // 8. 执行后置测试与断言脚本 (Tests / Assertions)
+      // 8. 依次执行父容器链与请求自身后置测试与断言脚本 (Tests / Assertions)
       List<TestAssertionResult> testResults = [];
+
+      // 8.1 自顶向下执行父容器测试脚本
+      for (final container in parentChain) {
+        final cPostScript = container.postRequestScript as String?;
+        if (cPostScript != null && cPostScript.trim().isNotEmpty) {
+          allConsoleLogs.add('[TESTS] 执行容器【${container.name}】后置断言');
+          final postResult = await ScriptEngine.executePostRequestScript(
+            script: cPostScript,
+            response: ApiResponse(
+              statusCode: response.statusCode ?? 200,
+              statusMessage: response.statusMessage ?? 'OK',
+              headers: responseHeaders,
+              body: bodyStr,
+              durationMs: durationMs,
+              sizeBytes: sizeBytes,
+            ),
+            environmentVariables: envVars,
+          );
+          allConsoleLogs.addAll(postResult.consoleLogs);
+          testResults.addAll(postResult.testResults);
+          updatedEnv.addAll(postResult.updatedEnvironmentVariables);
+        }
+      }
+
+      // 8.2 执行当前请求自身后置测试脚本
       if (request.postRequestScript.trim().isNotEmpty) {
+        allConsoleLogs.add('[TESTS] 执行请求【${request.name}】后置断言');
         final postResult = await ScriptEngine.executePostRequestScript(
           script: request.postRequestScript,
           response: ApiResponse(
@@ -187,7 +314,7 @@ class HttpClientService {
           environmentVariables: envVars,
         );
         allConsoleLogs.addAll(postResult.consoleLogs);
-        testResults = postResult.testResults;
+        testResults.addAll(postResult.testResults);
         updatedEnv.addAll(postResult.updatedEnvironmentVariables);
       }
 

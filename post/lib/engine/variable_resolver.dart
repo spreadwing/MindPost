@@ -8,6 +8,7 @@ class VariableResolver {
   static Map<String, String> buildVariableMap({
     required Workspace workspace,
     ApiCollection? collection,
+    List<dynamic>? parentContainers,
     Map<String, String>? requestVariables,
   }) {
     final map = <String, String>{};
@@ -32,8 +33,19 @@ class VariableResolver {
       }
     }
 
-    // 3. 集合级变量
-    if (collection != null) {
+    // 3. 集合与各级父目录变量（自顶向下合并，子级覆盖父级）
+    if (parentContainers != null) {
+      for (final container in parentContainers) {
+        final vars = container.variables as List<dynamic>?;
+        if (vars != null) {
+          for (final v in vars) {
+            if (v.isEnabled == true && (v.key as String).isNotEmpty) {
+              map[v.key as String] = v.value as String;
+            }
+          }
+        }
+      }
+    } else if (collection != null) {
       for (final v in collection.variables) {
         if (v.isEnabled && v.key.isNotEmpty) {
           map[v.key] = v.value;
@@ -101,7 +113,10 @@ class VariableResolver {
     }
 
     // 3. 隐式 Base URL 自动拼接处理
-    final baseUrl = currentBaseUrl ?? variables['baseUrl'];
+    final baseUrl = (variables['baseUrl'] != null &&
+            variables['baseUrl']!.trim().isNotEmpty)
+        ? variables['baseUrl']!.trim()
+        : currentBaseUrl;
     if (baseUrl != null && baseUrl.isNotEmpty) {
       final cleanBase = baseUrl.endsWith('/')
           ? baseUrl.substring(0, baseUrl.length - 1)

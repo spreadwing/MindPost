@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- 极细腻层叠阴影 -->
+    <filter id="ribbonShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="-4" dy="12" stdDeviation="14" flood-color="#002B44" flood-opacity="0.32"/>
+    </filter>
+    <filter id="baseCardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- 白底卡片 (参考图纯白 + 极细浅灰蓝外边框) -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="6" filter="url(#baseCardShadow)"/>
+
+  <!-- 图中同款跑道胶囊 (Capsule / Rounded Pill) 极简重构飞机 -->
+  <g>
+    <!-- 1. 左侧机翼/机腹：深海蓝胶囊 (#004C74) -->
+    <rect x="150" y="240" width="70" height="150" rx="35" transform="rotate(-25 185 315)" fill="#004C74"/>
+    
+    <!-- 2. 中轴斜掠穿梭主翼：图中标志性亮青蓝胶囊带 (#01B6E8) + 悬浮阴影 -->
+    <g filter="url(#ribbonShadow)">
+      <path d="M 370 140 
+               L 190 320 
+               C 175 335 175 360 190 375 
+               C 205 390 230 390 245 375 
+               L 415 205 
+               C 425 195 428 175 420 160 
+               C 410 145 385 135 370 140 Z" 
+            fill="#01B6E8"/>
+    </g>
+
+    <!-- 3. 右侧副翼：蔚蓝胶囊柱 (#0288D1) -->
+    <rect x="290" y="170" width="65" height="180" rx="32.5" transform="rotate(25 322 260)" fill="#0288D1"/>
+
+    <!-- 4. 灵魂点睛：参考图同款纯白圆孔铆钉 (White Rivet #FFFFFF) -->
+    <circle cx="345" cy="315" r="14" fill="#FFFFFF"/>
+    
+    <!-- 左翼微型圆点 -->
+    <circle cx="168" cy="272" r="8" fill="#01B6E8"/>
+  </g>
+</svg>

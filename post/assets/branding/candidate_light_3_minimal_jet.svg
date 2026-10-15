@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- 淡蓝渐变底板 (宁静蓝天渐变) -->
+    <linearGradient id="bgLightBlue3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6BB1FF"/>
+      <stop offset="100%" stop-color="#3A82F7"/>
+    </linearGradient>
+
+    <!-- 柔和立体悬浮投影 -->
+    <filter id="shadow3" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#1E40AF" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- 桌面图标圆角底板 (Squircle) -->
+  <rect width="512" height="512" rx="115" fill="url(#bgLightBlue3)"/>
+
+  <!-- 居中纯白极简喷气式飞机 (平滑几何、圆润翼尖、现代科技感) -->
+  <g filter="url(#shadow3)">
+    <!-- 纯白一体化喷气机机身 (斜角 45° 冲天) -->
+    <path d="M 382 130 
+             C 388 136 388 145 382 151 
+             L 330 203 
+             L 375 320 
+             C 378 327 375 334 368 335 
+             C 364 336 360 334 357 330 
+             L 300 233 
+             L 242 291 
+             L 255 352 
+             C 257 358 253 363 247 364 
+             C 244 364 241 363 239 361 
+             L 212 321 
+             L 191 300 
+             L 151 273 
+             C 149 271 148 268 148 265 
+             C 149 259 154 255 160 257 
+             L 221 270 
+             L 279 212 
+             L 182 155 
+             C 178 152 176 148 177 144 
+             C 178 137 185 134 192 137 
+             L 309 182 
+             L 361 130 
+             C 367 124 376 124 382 130 Z" 
+          fill="#FFFFFF" />
+
+    <!-- 机身微光折线 (增添极简质感) -->
+    <path d="M 380 132 L 202 310" stroke="#E2E8F0" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+  </g>
+</svg>

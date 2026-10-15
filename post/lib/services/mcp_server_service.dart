@@ -62,7 +62,7 @@ class McpServerService {
         return Response.ok(
           json.encode({
             'status': 'running',
-            'server': 'PostMCP Model Context Protocol Server',
+            'server': 'MindPost Model Context Protocol Server',
             'version': '1.0.0',
             'toolsCount': 5,
             'activeEnvironment': workspace.activeEnvironment?.name ?? 'None',
@@ -171,7 +171,7 @@ class McpServerService {
               'resources': {},
             },
             'serverInfo': {
-              'name': 'postmcp-workbench',
+              'name': 'mindpost-workbench',
               'version': '1.0.0',
             },
           },
@@ -226,7 +226,7 @@ class McpServerService {
       {
         'name': 'list_collections_and_apis',
         'description':
-            '获取 PostMCP 桌面客户端中所有接口集合、文件夹及 API 请求列表（包含请求 ID、名称、方法和 URL 模板）。供 AI Agent 快速检索当前项目接口。',
+            '获取 MindPost 桌面客户端中所有接口集合、文件夹及 API 请求列表（包含请求 ID、名称、方法和 URL 模板）。供 AI Agent 快速检索当前项目接口。',
         'inputSchema': {
           'type': 'object',
           'properties': {
@@ -349,7 +349,8 @@ class McpServerService {
               'id': c.id,
               'name': c.name,
               'description': c.description,
-              'requests': c.requests.map((r) => {
+              'foldersCount': c.folders.length,
+              'requests': c.findAllRequests().map((r) => {
                     'id': r.id,
                     'name': r.name,
                     'method': r.method.nameString,
@@ -364,11 +365,10 @@ class McpServerService {
           final requestId = arguments['request_id'] as String? ?? '';
           ApiRequest? foundRequest;
           for (final c in workspace.collections) {
-            for (final r in c.requests) {
-              if (r.id == requestId) {
-                foundRequest = r;
-                break;
-              }
+            final r = c.findRequestById(requestId);
+            if (r != null) {
+              foundRequest = r;
+              break;
             }
           }
           if (foundRequest == null) {
@@ -384,11 +384,10 @@ class McpServerService {
 
           if (requestId != null && requestId.isNotEmpty) {
             for (final c in workspace.collections) {
-              for (final r in c.requests) {
-                if (r.id == requestId) {
-                  targetRequest = r.copyWith();
-                  break;
-                }
+              final r = c.findRequestById(requestId);
+              if (r != null) {
+                targetRequest = r.copyWith();
+                break;
               }
             }
           }
@@ -413,9 +412,20 @@ class McpServerService {
             targetRequest.headers = [...targetRequest.headers, ...extraHeaders];
           }
 
+          final calledTime = DateTime.now();
+          workspace.recordApiCall(targetRequest, calledAt: calledTime);
+          onWorkspaceUpdated?.call(workspace);
+
           final execRes = await httpClientService.executeRequest(
             request: targetRequest,
             workspace: workspace,
+          );
+
+          workspace.recordApiCall(
+            targetRequest,
+            statusCode: execRes.response.statusCode,
+            durationMs: execRes.response.durationMs,
+            calledAt: calledTime,
           );
 
           // 若前置/后置脚本更新了环境变量，同步回写
@@ -433,8 +443,8 @@ class McpServerService {
                 env.variables.add(VariableItem(key: entry.key, value: entry.value));
               }
             }
-            onWorkspaceUpdated?.call(workspace);
           }
+          onWorkspaceUpdated?.call(workspace);
 
           result = {
             'success': true,

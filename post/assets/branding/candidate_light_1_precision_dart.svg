@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- 淡蓝渐变底板 (天青晨光：淡雅、通透、科技而不刺眼) -->
+    <linearGradient id="bgLightBlue1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7AC2FD"/>
+      <stop offset="100%" stop-color="#3B8EF6"/>
+    </linearGradient>
+    
+    <!-- 纯白机身柔和投影，增强悬浮与精致感 -->
+    <filter id="shadow1" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#1D4ED8" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <!-- 桌面图标圆角底板 (Squircle) -->
+  <rect width="512" height="512" rx="115" fill="url(#bgLightBlue1)"/>
+
+  <!-- 居中纯白经典折纸飞机 -->
+  <g filter="url(#shadow1)">
+    <!-- 1. 底部龙骨微暗面 (淡冰蓝，体现折纸立体厚度) -->
+    <polygon points="385,125 240,290 215,340" fill="#BFDBFE"/>
+
+    <!-- 2. 左机翼 (纯白微光面 #F4F8FF) -->
+    <polygon points="385,125 125,275 252,282" fill="#F4F8FF"/>
+
+    <!-- 3. 中央折痕中轴 (极浅过渡) -->
+    <polygon points="385,125 252,282 240,290" fill="#DBEAFE"/>
+
+    <!-- 4. 右机翼主面 (100% 极纯雪白，高光聚焦) -->
+    <polygon points="385,125 252,282 270,385" fill="#FFFFFF"/>
+  </g>
+</svg>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- 图中同款层叠柔和暗部阴影 (深海蓝投影) -->
+    <filter id="shadowRef2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="-2" dy="14" stdDeviation="18" flood-color="#003554" flood-opacity="0.30"/>
+    </filter>
+    <filter id="wingShadowRef2" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="-4" dy="8" stdDeviation="10" flood-color="#004C74" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <!-- 底板：图中同款纯色明亮青淡蓝 (#01B6E8，纯色无渐变) -->
+  <rect width="512" height="512" rx="115" fill="#01B6E8"/>
+
+  <!-- 候选4双层悬浮折纸飞机 (图中纯白 + 深蓝 #004C74 折叠底座) -->
+  <g filter="url(#shadowRef2)">
+    <!-- 1. 下层折叠底座 (图中同款深海蓝 #004C74，对比强烈) -->
+    <polygon points="380,130 220,330 180,310" fill="#004C74"/>
+    
+    <!-- 2. 左机翼底层 (雪白微青阶 #EDF9FE) -->
+    <polygon points="380,130 135,285 240,290" fill="#EDF9FE"/>
+
+    <!-- 3. 右主翼 (悬浮于上层，100% 极纯雪白 #FFFFFF + 细腻图层自投影) -->
+    <polygon points="380,130 240,290 280,380" fill="#FFFFFF" filter="url(#wingShadowRef2)"/>
+
+    <!-- 4. 图中同款特征：折面圆点白铆钉 (White Rivet) 与青蓝微点 -->
+    <circle cx="230" cy="305" r="9" fill="#01B6E8"/>
+  </g>
+</svg>

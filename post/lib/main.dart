@@ -3,28 +3,71 @@ import 'ui/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const PostMcpApp());
+  runApp(const MindPostApp());
 }
 
-class PostMcpApp extends StatelessWidget {
-  const PostMcpApp({super.key});
+class MindPostApp extends StatelessWidget {
+  const MindPostApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PostMCP - AI-Native API Workbench',
+      title: 'MindPost',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF3B82F6),
+          seedColor: const Color(0xFF2563EB),
+          primary: const Color(0xFF2563EB),
+          surface: Colors.white,
           brightness: Brightness.light,
         ),
         scaffoldBackgroundColor: const Color(0xFFF8FAFC),
         cardColor: Colors.white,
         dividerColor: const Color(0xFFE2E8F0),
-        fontFamily: 'Segoe UI',
+        dividerTheme: const DividerThemeData(
+          color: Color(0xFFE2E8F0),
+          space: 1,
+          thickness: 1,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFFF8FAFC),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.2),
+          ),
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+        ),
+        tabBarTheme: const TabBarThemeData(
+          indicatorColor: Color(0xFF2563EB),
+          labelColor: Color(0xFF2563EB),
+          unselectedLabelColor: Color(0xFF64748B),
+          indicatorSize: TabBarIndicatorSize.label,
+          labelStyle: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: TextStyle(fontSize: 12.5, fontWeight: FontWeight.normal),
+        ),
+        tooltipTheme: TooltipThemeData(
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          textStyle: const TextStyle(color: Colors.white, fontSize: 11),
+          waitDuration: const Duration(milliseconds: 400),
+        ),
+        fontFamily: 'MiSans',
+        fontFamilyFallback: const ['Microsoft YaHei', 'PingFang SC', 'sans-serif'],
       ),
       home: const HomeScreen(),
     );

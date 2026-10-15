@@ -1,3 +1,7 @@
-﻿*.bak
+*.bak
 *.tmp
 
+NAS-Copilot/
+nasio/
+nasio-client/
+data/

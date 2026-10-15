@@ -1,6 +1,6 @@
-# postmcp
+# MindPost
 
-A new Flutter project.
+MindPost - AI-Native API Workbench.
 
 ## Getting Started
 

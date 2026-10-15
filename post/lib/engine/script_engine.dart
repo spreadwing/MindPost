@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_js/flutter_js.dart';
 import '../models/api_request.dart';
 import '../models/api_response.dart';
@@ -91,11 +93,129 @@ class ScriptEngine {
         }
       });
 
-      // 5. 准备初始化 JS 沙箱 Polyfill
+      // 5. 注册异步 sendRequest 网络调用通道
+      final pendingCompleters = <Completer<void>>[];
+      final dio = Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+      ));
+
+      jsRuntime.onMessage('send_request_channel', (dynamic args) async {
+        if (args is! Map) return;
+        final reqId = args['reqId']?.toString() ?? '';
+        final options = args['options'] as Map<String, dynamic>? ?? {};
+
+        final completer = Completer<void>();
+        pendingCompleters.add(completer);
+
+        try {
+          final url = options['url']?.toString() ?? '';
+          final method = (options['method']?.toString() ?? 'GET').toUpperCase();
+
+          final headers = <String, dynamic>{};
+          final rawHeader = options['header'] ?? options['headers'];
+          if (rawHeader is String) {
+            final lines = rawHeader.split('\n');
+            for (final line in lines) {
+              final colonIdx = line.indexOf(':');
+              if (colonIdx > 0) {
+                headers[line.substring(0, colonIdx).trim()] =
+                    line.substring(colonIdx + 1).trim();
+              }
+            }
+          } else if (rawHeader is Map) {
+            rawHeader.forEach((k, v) {
+              headers[k.toString()] = v;
+            });
+          }
+
+          dynamic data;
+          final bodyObj = options['body'];
+          if (bodyObj is Map && bodyObj['mode'] == 'raw') {
+            data = bodyObj['raw'];
+          } else if (bodyObj != null) {
+            data = bodyObj;
+          }
+
+          final resp = await dio.request(
+            url,
+            data: data,
+            options: Options(
+              method: method,
+              headers: headers,
+              responseType: ResponseType.plain,
+              validateStatus: (_) => true,
+            ),
+          );
+
+          final resJson = json.encode({
+            'statusCode': resp.statusCode,
+            'statusMessage': resp.statusMessage ?? '',
+            'headers': resp.headers.map,
+            'body': resp.data,
+          });
+
+          jsRuntime?.evaluate(
+            "if (typeof _globalScope !== 'undefined' && typeof _globalScope.__onSendRequestResult === 'function') { _globalScope.__onSendRequestResult('$reqId', null, $resJson); } else if (typeof __onSendRequestResult === 'function') { __onSendRequestResult('$reqId', null, $resJson); }",
+          );
+        } catch (err) {
+          final errSafe = json.encode(err.toString());
+          jsRuntime?.evaluate(
+            "if (typeof _globalScope !== 'undefined' && typeof _globalScope.__onSendRequestResult === 'function') { _globalScope.__onSendRequestResult('$reqId', $errSafe, null); } else if (typeof __onSendRequestResult === 'function') { __onSendRequestResult('$reqId', $errSafe, null); }",
+          );
+        } finally {
+          completer.complete();
+        }
+      });
+
+      // 6. 准备初始化 JS 沙箱 Polyfill
       final envJson = json.encode(environmentVariables);
       final globalJson = json.encode(globalVariables ?? {});
 
       final polyfillScript = '''
+        var _globalScope = (typeof window !== 'undefined') ? window : (typeof globalThis !== 'undefined' ? globalThis : this);
+        _globalScope.__sendReqCount = 0;
+        _globalScope.__sendReqCallbacks = {};
+
+        _globalScope.__onSendRequestResult = function(reqId, err, res) {
+          var cb = _globalScope.__sendReqCallbacks[reqId];
+          if (cb) {
+            delete _globalScope.__sendReqCallbacks[reqId];
+            try {
+              var responseObj = res ? {
+                code: res.statusCode,
+                statusCode: res.statusCode,
+                status: res.statusMessage,
+                headers: res.headers,
+                json: function() {
+                  if (typeof res.body === 'object') return res.body;
+                  try {
+                    return JSON.parse(res.body || '{}');
+                  } catch(e) {
+                    return {};
+                  }
+                },
+                text: function() {
+                  return typeof res.body === 'string' ? res.body : JSON.stringify(res.body);
+                }
+              } : null;
+              cb(err, responseObj);
+            } catch(e) {
+              console.error('[sendRequest callback error] ' + e);
+            }
+          }
+        };
+
+        function _triggerSendRequest(options, callback) {
+          _globalScope.__sendReqCount++;
+          var reqId = '' + _globalScope.__sendReqCount;
+          _globalScope.__sendReqCallbacks[reqId] = callback;
+          sendMessage('send_request_channel', JSON.stringify({
+            reqId: reqId,
+            options: options
+          }));
+        }
+
         // Console 重定向
         console = {
           log: function(...args) { sendMessage('console_log', JSON.stringify(args.join(' '))); },
@@ -136,6 +256,9 @@ class ScriptEngine {
         var _globalData = $globalJson;
 
         var pm = {
+          sendRequest: function(options, callback) {
+            _triggerSendRequest(options, callback);
+          },
           environment: {
             get: function(k) { return _envData[k]; },
             set: function(k, v) {
@@ -169,6 +292,38 @@ class ScriptEngine {
                 }
               }
             }
+          }
+        };
+
+        // Apipost apt.* 原生别名全兼容层
+        var apt = {
+          sendRequest: function(options, callback) {
+            _triggerSendRequest(options, callback);
+          },
+          setRequestHeader: function(k, v) {
+            if (k) {
+              sendMessage('header_add', JSON.stringify({ key: k, value: String(v) }));
+            }
+          },
+          setEnvironmentVariable: function(k, v) {
+            pm.environment.set(k, v);
+          },
+          getEnvironmentVariable: function(k) {
+            return pm.environment.get(k);
+          },
+          setGlobalVariable: function(k, v) {
+            pm.environment.set(k, v);
+          },
+          getGlobalVariable: function(k) {
+            return pm.globals.get(k);
+          },
+          variables: {
+            set: function(k, v) { pm.environment.set(k, v); },
+            get: function(k) { return pm.environment.get(k); }
+          },
+          globals: {
+            set: function(k, v) { pm.environment.set(k, v); },
+            get: function(k) { return pm.globals.get(k); }
           }
         };
       ''';
@@ -208,7 +363,6 @@ class ScriptEngine {
       // 修正 _internal_simple_hash 桥接
       jsRuntime.evaluate('''
         function _internal_simple_hash(input, type) {
-          // 在客户端同步支持
           return "" + Math.abs(input.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0));
         }
       ''');
@@ -224,6 +378,12 @@ class ScriptEngine {
           consoleLogs: consoleLogs,
           error: evalResult.rawResult.toString(),
         );
+      }
+
+      // 等待可能触发的异步请求完成 (带超时保护)
+      if (pendingCompleters.isNotEmpty) {
+        await Future.wait(pendingCompleters.map((c) => c.future))
+            .timeout(const Duration(seconds: 20), onTimeout: () => []);
       }
 
       return ScriptExecutionResult(
@@ -331,6 +491,20 @@ class ScriptEngine {
             } catch(e) {
               sendMessage('test_assertion', JSON.stringify({ title: title, passed: false, error: e.message || String(e) }));
             }
+          }
+        };
+
+        var apt = {
+          setEnvironmentVariable: function(k, v) { pm.environment.set(k, v); },
+          getEnvironmentVariable: function(k) { return pm.environment.get(k); },
+          setGlobalVariable: function(k, v) { pm.environment.set(k, v); },
+          getGlobalVariable: function(k) { return pm.environment.get(k); },
+          variables: {
+            set: function(k, v) { pm.environment.set(k, v); },
+            get: function(k) { return pm.environment.get(k); }
+          },
+          assert: function(title, fn) {
+            pm.test(title, fn);
           }
         };
       ''';

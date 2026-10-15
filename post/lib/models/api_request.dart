@@ -32,12 +32,14 @@ enum BodyType { none, json, formUrlEncoded, formData, raw }
 class KeyValueItem {
   String key;
   String value;
+  String type; // 'text' 或 'file'
   bool isEnabled;
   String description;
 
   KeyValueItem({
     required this.key,
     required this.value,
+    this.type = 'text',
     this.isEnabled = true,
     this.description = '',
   });
@@ -45,12 +47,14 @@ class KeyValueItem {
   KeyValueItem copyWith({
     String? key,
     String? value,
+    String? type,
     bool? isEnabled,
     String? description,
   }) {
     return KeyValueItem(
       key: key ?? this.key,
       value: value ?? this.value,
+      type: type ?? this.type,
       isEnabled: isEnabled ?? this.isEnabled,
       description: description ?? this.description,
     );
@@ -59,6 +63,7 @@ class KeyValueItem {
   Map<String, dynamic> toJson() => {
         'key': key,
         'value': value,
+        'type': type,
         'isEnabled': isEnabled,
         'description': description,
       };
@@ -67,6 +72,7 @@ class KeyValueItem {
     return KeyValueItem(
       key: json['key'] as String? ?? '',
       value: json['value'] as String? ?? '',
+      type: json['type'] as String? ?? 'text',
       isEnabled: json['isEnabled'] as bool? ?? true,
       description: json['description'] as String? ?? '',
     );
@@ -82,6 +88,7 @@ class ApiRequest {
   List<KeyValueItem> headers;
   List<KeyValueItem> params;
   BodyType bodyType;
+  String rawFormat; // 'json', 'text', 'xml', 'html', 'javascript'
   String bodyContent;
   List<KeyValueItem> formDataFields;
   String preRequestScript;
@@ -97,6 +104,7 @@ class ApiRequest {
     List<KeyValueItem>? headers,
     List<KeyValueItem>? params,
     this.bodyType = BodyType.none,
+    this.rawFormat = 'json',
     this.bodyContent = '',
     List<KeyValueItem>? formDataFields,
     this.preRequestScript = '',
@@ -116,6 +124,7 @@ class ApiRequest {
     List<KeyValueItem>? headers,
     List<KeyValueItem>? params,
     BodyType? bodyType,
+    String? rawFormat,
     String? bodyContent,
     List<KeyValueItem>? formDataFields,
     String? preRequestScript,
@@ -131,6 +140,7 @@ class ApiRequest {
       headers: headers ?? this.headers.map((e) => e.copyWith()).toList(),
       params: params ?? this.params.map((e) => e.copyWith()).toList(),
       bodyType: bodyType ?? this.bodyType,
+      rawFormat: rawFormat ?? this.rawFormat,
       bodyContent: bodyContent ?? this.bodyContent,
       formDataFields: formDataFields ??
           this.formDataFields.map((e) => e.copyWith()).toList(),
@@ -149,6 +159,7 @@ class ApiRequest {
         'headers': headers.map((h) => h.toJson()).toList(),
         'params': params.map((p) => p.toJson()).toList(),
         'bodyType': bodyType.name,
+        'rawFormat': rawFormat,
         'bodyContent': bodyContent,
         'formDataFields': formDataFields.map((f) => f.toJson()).toList(),
         'preRequestScript': preRequestScript,
@@ -175,6 +186,7 @@ class ApiRequest {
         (e) => e.name == (json['bodyType'] as String? ?? 'none'),
         orElse: () => BodyType.none,
       ),
+      rawFormat: json['rawFormat'] as String? ?? 'json',
       bodyContent: json['bodyContent'] as String? ?? '',
       formDataFields: (json['formDataFields'] as List<dynamic>?)
               ?.map((e) => KeyValueItem.fromJson(e as Map<String, dynamic>))

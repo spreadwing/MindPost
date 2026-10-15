@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="shadowSolid4" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#1D4ED8" flood-opacity="0.22"/>
+    </filter>
+    <filter id="wingShadow4" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="-4" dy="8" stdDeviation="10" flood-color="#1E3A8A" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- 纯色淡蓝 D：清亮蔚蓝 #4F8EF7 -->
+  <rect width="512" height="512" rx="115" fill="#4F8EF7"/>
+
+  <g filter="url(#shadowSolid4)">
+    <polygon points="380,130 220,330 180,310" fill="#BFDBFE"/>
+    <polygon points="380,130 135,285 240,290" fill="#F0F7FF"/>
+    <polygon points="380,130 240,290 280,380" fill="#FFFFFF" filter="url(#wingShadow4)"/>
+  </g>
+</svg>

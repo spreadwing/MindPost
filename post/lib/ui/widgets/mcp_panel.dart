@@ -42,7 +42,7 @@ class _McpPanelState extends State<McpPanel> {
   void _copyConfig() {
     final config = {
       'mcpServers': {
-        'postmcp': {
+        'mindpost': {
           'url': 'http://127.0.0.1:${widget.mcpServerService.port}/sse',
         }
       }
@@ -116,7 +116,7 @@ class _McpPanelState extends State<McpPanel> {
                 const Icon(Icons.hub_outlined, color: Color(0xFF10B981), size: 24),
                 const SizedBox(width: 8),
                 const Text(
-                  'MCP (Model Context Protocol) 调试控制台',
+                  'MCP 调试控制台',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
@@ -140,7 +140,7 @@ class _McpPanelState extends State<McpPanel> {
                       const SizedBox(width: 6),
                       Text(
                         isRunning
-                            ? '运行中 (: ${widget.mcpServerService.port})'
+                            ? '运行中 :${widget.mcpServerService.port}'
                             : '已停止',
                         style: TextStyle(
                           color: isRunning ? const Color(0xFF10B981) : Colors.grey,
@@ -242,24 +242,24 @@ class _McpPanelState extends State<McpPanel> {
                           items: const [
                             DropdownMenuItem(
                               value: 'list_collections_and_apis',
-                              child: Text('list_collections_and_apis (列出集合与接口)'),
+                              child: Text('list_collections_and_apis · 列出集合与接口'),
                             ),
                             DropdownMenuItem(
                               value: 'get_api_detail',
-                              child: Text('get_api_detail (获取接口详情)'),
+                              child: Text('get_api_detail · 获取接口详情'),
                             ),
                             DropdownMenuItem(
                               value: 'execute_api_request',
-                              child: Text('execute_api_request (调度执行请求)'),
+                              child: Text('execute_api_request · 调度执行请求'),
                             ),
                             DropdownMenuItem(
                               value: 'manage_environment_variables',
                               child:
-                                  Text('manage_environment_variables (管理环境变量)'),
+                                  Text('manage_environment_variables · 管理环境变量'),
                             ),
                             DropdownMenuItem(
                               value: 'get_execution_history_logs',
-                              child: Text('get_execution_history_logs (获取执行日志)'),
+                              child: Text('get_execution_history_logs · 获取执行日志'),
                             ),
                           ],
                           onChanged: (val) {
@@ -302,7 +302,7 @@ class _McpPanelState extends State<McpPanel> {
                       style: const TextStyle(
                           fontFamily: 'monospace', fontSize: 12),
                       decoration: const InputDecoration(
-                        labelText: '入参 (JSON Arguments)',
+                        labelText: '入参 JSON',
                         border: OutlineInputBorder(),
                         isDense: true,
                       ),
