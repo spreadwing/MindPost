@@ -949,7 +949,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
         _showFolderMenu(details.globalPosition, folder, parent);
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 1.5, horizontal: 5),
+        margin: const EdgeInsets.symmetric(vertical: 0.5, horizontal: 4),
         decoration: BoxDecoration(
           color: isSelected || isHovered
               ? palette.activeItemBackgroundColor
@@ -961,14 +961,14 @@ class ApiTreeViewState extends State<ApiTreeView> {
                       color: palette.activeItemBorderColor, width: 0.9)
                   : null),
           boxShadow: isSelected ? palette.activeItemShadows : null,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(5),
         ),
         child: InkWell(
           onTap: () => _handleContainerTap(folder, false),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(5),
           child: Padding(
             padding: EdgeInsets.only(
-                left: 6.0 + depth * 12.0, right: 6, top: 4.5, bottom: 4.5),
+                left: 5.0 + depth * 13.0, right: 5, top: 3.0, bottom: 3.0),
             child: Row(
               children: [
                 if (isSelected)
@@ -988,7 +988,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
                     isExpanded
                         ? Icons.keyboard_arrow_down_rounded
                         : Icons.keyboard_arrow_right_rounded,
-                    size: 18,
+                    size: 16,
                     color: palette.mutedIconColor,
                   ),
                 ),
@@ -997,7 +997,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
                   isExpanded
                       ? Icons.folder_open_rounded
                       : Icons.folder_rounded,
-                  size: 16,
+                  size: 15,
                   color: const Color(0xFFF59E0B),
                 ),
                 const SizedBox(width: 6),
@@ -1005,7 +1005,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
                   child: Text(
                     folder.name,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w600,
                       color: isSelected
                           ? palette.activeItemTextColor
@@ -1129,23 +1129,23 @@ class ApiTreeViewState extends State<ApiTreeView> {
         _showRequestMenu(details.globalPosition, req, parent);
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 1.5, horizontal: 5),
+        margin: const EdgeInsets.symmetric(vertical: 0.5, horizontal: 4),
         decoration: BoxDecoration(
           color: isSelected
               ? palette.activeItemBackgroundColor
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(5),
           border: isSelected
               ? Border.all(color: palette.activeItemBorderColor, width: 0.9)
               : null,
           boxShadow: isSelected ? palette.activeItemShadows : null,
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(5),
           onTap: () => widget.onRequestSelected(req),
           child: Padding(
             padding: EdgeInsets.only(
-                left: 8.0 + depth * 12.0, right: 6, top: 4.5, bottom: 4.5),
+                left: 6.0 + depth * 13.0, right: 5, top: 3.0, bottom: 3.0),
             child: Row(
               children: [
                 if (isSelected)
@@ -1158,13 +1158,13 @@ class ApiTreeViewState extends State<ApiTreeView> {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                HttpMethodBadge(method: req.method, fontSize: 9),
-                const SizedBox(width: 6),
+                HttpMethodBadge(method: req.method, fontSize: 8.5),
+                const SizedBox(width: 5),
                 Expanded(
                   child: Text(
                     req.name,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.normal,
                       color: isSelected
@@ -1378,25 +1378,30 @@ class ApiTreeViewState extends State<ApiTreeView> {
                 ),
                 const SizedBox(height: 8),
 
-                // 搜索栏
+                // 搜索栏 (弱化边框，减轻视觉比重，更聚焦列表)
                 Container(
-                  height: 32,
+                  height: 30,
                   decoration: BoxDecoration(
-                    color: palette.searchBoxBackgroundColor,
+                    color: palette.searchBoxBackgroundColor.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: palette.searchBoxBorderColor),
+                    border: Border.all(
+                      color: palette.searchBoxBorderColor.withValues(alpha: 0.45),
+                      width: 0.8,
+                    ),
                   ),
                   child: TextField(
                     controller: _searchController,
                     style:
-                        TextStyle(fontSize: 12, color: palette.searchTextColor),
+                        TextStyle(fontSize: 11.5, color: palette.searchTextColor),
                     decoration: InputDecoration(
                       filled: false,
                       hintText: '搜索目录 / 接口名称 / URL...',
                       hintStyle: TextStyle(
-                          fontSize: 11, color: palette.searchHintColor),
+                          fontSize: 11,
+                          color: palette.searchHintColor.withValues(alpha: 0.85)),
                       prefixIcon: Icon(Icons.search_rounded,
-                          size: 16, color: palette.searchHintColor),
+                          size: 15,
+                          color: palette.searchHintColor.withValues(alpha: 0.8)),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? InkWell(
                               onTap: () {
@@ -1404,14 +1409,15 @@ class ApiTreeViewState extends State<ApiTreeView> {
                                 setState(() => _searchQuery = '');
                               },
                               child: Icon(Icons.close_rounded,
-                                  size: 14, color: palette.searchHintColor),
+                                  size: 13,
+                                  color: palette.searchHintColor.withValues(alpha: 0.8)),
                             )
                           : null,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 7),
                     ),
                     onChanged: (val) {
                       setState(() {
@@ -1430,7 +1436,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
           // 树形列表内容
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(vertical: 3),
               itemCount: widget.workspace.collections.length,
               itemBuilder: (context, colIndex) {
                 final col = widget.workspace.collections[colIndex];
@@ -1451,7 +1457,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(
-                        vertical: 1.5, horizontal: 5),
+                        vertical: 0.5, horizontal: 4),
                     decoration: BoxDecoration(
                       color: isSelected || isHovered
                           ? palette.activeItemBackgroundColor
@@ -1466,14 +1472,14 @@ class ApiTreeViewState extends State<ApiTreeView> {
                               : null),
                       boxShadow:
                           isSelected ? palette.activeItemShadows : null,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(5),
                     ),
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(5),
                       onTap: () => _handleContainerTap(col, true),
                       child: Padding(
                         padding: const EdgeInsets.only(
-                            left: 6, right: 6, top: 5, bottom: 5),
+                            left: 5, right: 5, top: 3.5, bottom: 3.5),
                         child: Row(
                           children: [
                             if (isSelected)
@@ -1493,17 +1499,20 @@ class ApiTreeViewState extends State<ApiTreeView> {
                                 isExpanded
                                     ? Icons.keyboard_arrow_down_rounded
                                     : Icons.keyboard_arrow_right_rounded,
-                                size: 18,
+                                size: 16,
                                 color: palette.mutedIconColor,
                               ),
                             ),
                             const SizedBox(width: 2),
+                            // 加深顶层 Collection 图标对比度与辨识度
                             Icon(
                               isExpanded
-                                  ? Icons.folder_open_rounded
-                                  : Icons.folder_rounded,
-                              size: 16,
-                              color: const Color(0xFFF59E0B),
+                                  ? Icons.source_rounded
+                                  : Icons.inventory_2_rounded,
+                              size: 15,
+                              color: palette.isDark
+                                  ? const Color(0xFFFBBF24)
+                                  : const Color(0xFFD97706),
                             ),
                             const SizedBox(width: 6),
                             Expanded(
@@ -1511,7 +1520,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
                                 col.name,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                   color: isSelected
                                       ? palette.activeItemTextColor
                                       : palette.folderTextColor,

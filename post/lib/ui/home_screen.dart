@@ -22,6 +22,7 @@ import 'widgets/ai_copilot_drawer.dart';
 import 'widgets/api_tree_view.dart';
 import 'widgets/container_settings_view.dart';
 import 'widgets/json_syntax_highlighter.dart';
+import 'widgets/help_dialog.dart';
 import 'app_fonts.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -39,7 +40,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Workspace _workspace = Workspace.createDemo();
   bool _isLoadingWorkspace = false;
   bool _isMigratingApipost = false;
-  String _apipostMigrationStatus = '';
   bool _isSyncingS3 = false;
   String _s3SyncStatus = '';
   bool _s3SyncSuccess = true;
@@ -92,6 +92,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _responseSearchMatchCount = 0;
   String _responseViewMode = 'json'; // 'json' | 'table'
   String? _selectedResponseArrayPath;
+  bool _editorDarkMode = false; // 代码编辑器与响应报文暗色高亮模式
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -247,18 +248,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (_isMigratingApipost) return;
     setState(() {
       _isMigratingApipost = true;
-      _apipostMigrationStatus = '正在连接 Apipost MCP...';
     });
+    debugPrint('正在连接 Apipost MCP...');
     setModalState?.call(() {});
 
     try {
       final result = await ApipostMigrationService.migrateFromMcp(
         onProgress: (completed, total, itemName) {
           if (!mounted) return;
-          setState(() {
-            _apipostMigrationStatus =
-                '正在迁移 $completed / $total · $itemName';
-          });
+          debugPrint('正在迁移 $completed / $total · $itemName');
           setModalState?.call(() {});
         },
       );
@@ -310,9 +308,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ...remainingCollections,
         ];
         _isMigratingApipost = false;
-        _apipostMigrationStatus =
-            '已完成迁移：${result.folderCount} 个目录，${result.apiCount} 个接口';
       });
+      debugPrint('已完成迁移：${result.folderCount} 个目录，${result.apiCount} 个接口');
       setModalState?.call(() {});
 
       _mcpServerService.updateWorkspace(_workspace);
@@ -331,8 +328,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (!mounted) return;
       setState(() {
         _isMigratingApipost = false;
-        _apipostMigrationStatus = '迁移失败: $e';
       });
+      debugPrint('迁移失败: $e');
       setModalState?.call(() {});
       if (!silent) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -428,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        _showAppSettingsDialog(initialTab: 4);
+        _showAppSettingsDialog(initialTab: 3);
       }
       return;
     }
@@ -482,7 +479,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        _showAppSettingsDialog(initialTab: 4);
+        _showAppSettingsDialog(initialTab: 3);
       }
       return;
     }
@@ -962,22 +959,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                     return Container(
                       height: 32,
-                      margin: const EdgeInsets.only(right: 6),
+                      margin: const EdgeInsets.only(right: 10),
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
                         border: Border.all(color: const Color(0xFFE2E8F0)),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(7),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 3,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 1.5),
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: const Color(0xFFEFF6FF),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(5),
                             ),
                             child: Text(
                               v.key,
@@ -988,7 +992,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 8),
                           ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 200),
                             child: DropdownButtonHideUnderline(
@@ -1039,14 +1043,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
 
-          // 环境切换下拉框（仅显示环境名）
+          // 环境切换下拉框（仅显示环境名，统一样式与间距）
           Container(
             height: 32,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFC),
               border: Border.all(color: const Color(0xFFE2E8F0)),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(7),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -1099,27 +1110,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
-          // 环境管理弹窗按钮
-          IconButton(
-            tooltip: '管理环境变量',
-            icon: const Icon(Icons.tune_rounded, size: 18, color: Color(0xFF475569)),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (_) => EnvironmentDialog(
-                  workspace: _workspace,
-                  onSaved: () {
-                    setState(() {});
-                    _mcpServerService.updateWorkspace(_workspace);
-                    _storageService.saveWorkspace(_workspace);
-                  },
+          // 环境管理弹窗按钮（统一高度圆角与精致悬浮反馈）
+          Tooltip(
+            message: '管理环境变量',
+            child: InkWell(
+              borderRadius: BorderRadius.circular(7),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => EnvironmentDialog(
+                    workspace: _workspace,
+                    onSaved: () {
+                      setState(() {});
+                      _mcpServerService.updateWorkspace(_workspace);
+                      _storageService.saveWorkspace(_workspace);
+                    },
+                  ),
+                );
+              },
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  borderRadius: BorderRadius.circular(7),
                 ),
-              );
-            },
+                child: const Icon(Icons.tune_rounded, size: 16, color: Color(0xFF475569)),
+              ),
+            ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
           // MCP Server 状态与控制面板入口
           InkWell(
@@ -1132,7 +1155,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               );
             },
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(7),
             child: Container(
               height: 32,
               padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -1140,7 +1163,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 color: mcpRunning
                     ? const Color(0xFFECFDF5)
                     : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(7),
                 border: Border.all(
                   color: mcpRunning
                       ? const Color(0xFFA7F3D0)
@@ -1190,7 +1213,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               } else if (action == 'download') {
                 _downloadFromS3();
               } else if (action == 'settings') {
-                _showAppSettingsDialog(initialTab: 4);
+                _showAppSettingsDialog(initialTab: 3);
               }
             },
             itemBuilder: (context) => [
@@ -1206,6 +1229,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ],
                 ),
               ),
+              const PopupMenuDivider(height: 8),
               const PopupMenuItem<String>(
                 value: 'download',
                 height: 36,
@@ -1288,6 +1312,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  /// 帮助与文档中心弹窗
+  void _showHelpDialog({int initialTab = 0}) {
+    HelpDialog.show(
+      context,
+      workspace: _workspace,
+      initialTab: initialTab,
+      onWorkspaceChanged: () {
+        setState(() {});
+        _storageService.saveWorkspace(_workspace);
+      },
+    );
+  }
+
   /// 软件设置弹窗
   void _showAppSettingsDialog({int initialTab = 0}) {
     final s3 = _workspace.s3Config;
@@ -1305,7 +1342,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         TextEditingController(text: '${_workspace.historyLimit}');
     bool obscureSecret = true;
     bool obscureAiKey = true;
-    int selectedSection = initialTab.clamp(0, 5);
+    int selectedSection = initialTab.clamp(0, 3);
 
     void syncControllersToConfig() {
       s3.endpoint = endpointCtrl.text.trim();
@@ -1355,19 +1392,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'subtitle': '配置大模型连接参数，未配置时主页面自动隐藏 AI 入口',
       },
       {
-        'icon': Icons.touch_app_outlined,
-        'title': '交互与快捷键',
-        'subtitle': '标签页操作习惯与键盘快捷键速查',
-      },
-      {
         'icon': Icons.cloud_sync_outlined,
         'title': 'S3 云端同步',
         'subtitle': '通过兼容 S3 的对象存储多端同步工作区',
-      },
-      {
-        'icon': Icons.sync_alt_rounded,
-        'title': '数据迁移',
-        'subtitle': '从外部接口工具导入或迁移项目数据',
       },
     ];
 
@@ -1772,8 +1799,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           onToggleObscureAiKey: onToggleObscureAiKey,
         );
       case 3:
-        return _buildInteractionSettingsSection(setModalState);
-      case 4:
+      default:
         return _buildS3SyncSettingsSection(
           setModalState: setModalState,
           syncControllersToConfig: syncControllersToConfig,
@@ -1786,9 +1812,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           obscureSecret: obscureSecret,
           onToggleObscureSecret: onToggleObscureSecret,
         );
-      case 5:
-      default:
-        return _buildDataMigrationSettingsSection(setModalState);
     }
   }
 
@@ -2762,153 +2785,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  /// 分区 3：交互与快捷键
-  Widget _buildInteractionSettingsSection(StateSetter setModalState) {
-    final shortcuts = <Map<String, String>>[
-      {
-        'keys': 'Ctrl + S',
-        'desc': '保存当前打开的接口或目录配置标签页，清除未保存圆点标记',
-      },
-      {
-        'keys': 'Ctrl + F',
-        'desc': '在底部响应面板激活搜索框，支持关键字高亮与上下跳转',
-      },
-      {
-        'keys': '单击左侧目录',
-        'desc': '打开该目录的公共请求头、Query 参数与前后置脚本配置页',
-      },
-      {
-        'keys': '双击左侧目录',
-        'desc': '快速展开或折叠该目录下的子目录与接口列表',
-      },
-      {
-        'keys': '右键点击标签页',
-        'desc': '弹出标签页管理菜单，支持关闭其他、关闭右侧及关闭全部标签页',
-      },
-      {
-        'keys': '右键响应数组节点',
-        'desc': '在 JSON 响应树中右击任意 Array 字段即可切换为二维表格视图',
-      },
-    ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '鼠标与标签页交互',
-          style: TextStyle(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
-          ),
-        ),
-        const SizedBox(height: 10),
-        _buildSettingSwitchCard(
-          icon: Icons.tab_unselected_rounded,
-          title: '双击标签页关闭',
-          subtitle: '开启后，鼠标左键双击顶部任意打开的标签页即可快速关闭',
-          value: _workspace.doubleClickToCloseTab,
-          onChanged: (val) {
-            setModalState(() {
-              _workspace.doubleClickToCloseTab = val;
-            });
-            setState(() {});
-            _storageService.saveWorkspace(_workspace);
-          },
-        ),
-        const SizedBox(height: 10),
-        _buildSettingSwitchCard(
-          icon: Icons.visibility_outlined,
-          title: '显示解析后请求目标栏',
-          subtitle: '在请求地址输入框下方实时展示环境变量替换后的完整请求地址',
-          value: _workspace.showUrlPreviewBar,
-          onChanged: (val) {
-            setModalState(() {
-              _workspace.showUrlPreviewBar = val;
-            });
-            setState(() {});
-            _storageService.saveWorkspace(_workspace);
-          },
-        ),
-        const SizedBox(height: 22),
-        const Text(
-          '快捷键与高效操作指南',
-          style: TextStyle(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Column(
-            children: List.generate(shortcuts.length, (index) {
-              final item = shortcuts[index];
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          constraints: const BoxConstraints(minWidth: 116),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(color: const Color(0xFFCBD5E1)),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x0A000000),
-                                offset: Offset(0, 1),
-                                blurRadius: 1,
-                              ),
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            item['keys']!,
-                            style: AppFonts.code(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1E293B),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Text(
-                            item['desc']!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF475569),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (index < shortcuts.length - 1)
-                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
-                ],
-              );
-            }),
-          ),
-        ),
-      ],
-    );
-  }
 
   /// 分区 2：S3 云端同步设置
   Widget _buildS3SyncSettingsSection({
@@ -3223,167 +3100,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  /// 分区 3：数据迁移与外部导入说明
-  Widget _buildDataMigrationSettingsSection(StateSetter setModalState) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFCBD5E1)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEFF6FF),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.sync_alt_rounded,
-                      size: 18,
-                      color: Color(0xFF2563EB),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Apipost 单机版 MCP 数据迁移',
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          '通过本地 Apipost 单机版 MCP 通道读取全部项目、目录层级与接口详情并导入当前工作区',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                    ),
-                    onPressed: _isMigratingApipost
-                        ? null
-                        : () => _migrateFromApipostMcp(
-                              setModalState: setModalState,
-                            ),
-                    icon: _isMigratingApipost
-                        ? const SizedBox(
-                            width: 13,
-                            height: 13,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.cloud_download_outlined, size: 15),
-                    label: Text(
-                      _isMigratingApipost ? '正在迁移...' : '立即迁移',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-              if (_apipostMigrationStatus.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    _apipostMigrationStatus,
-                    style: const TextStyle(
-                      fontSize: 11.5,
-                      color: Color(0xFF2563EB),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: const Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.terminal_rounded,
-                size: 18,
-                color: Color(0xFF475569),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '从浏览器开发者工具导入 cURL 请求',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      '在左侧目录树任意文件夹上点击鼠标右键，选择从浏览器请求导入，即可粘贴浏览器 Network 面板复制的 cURL 命令，并自由勾选是否导入 URL、请求头或请求体。',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        height: 1.5,
-                        color: Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+
 
   /// 通用设置项开关卡片
   Widget _buildSettingSwitchCard({
@@ -3806,6 +3523,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             badgeCount: historyCount,
           ),
           const Spacer(),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Tooltip(
+              message: '帮助与快捷键',
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () => _showHelpDialog(),
+                child: Container(
+                  width: 44,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.help_outline_rounded,
+                        size: 19,
+                        color: palette.isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '帮助',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w500,
+                          color: palette.isDark
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Tooltip(
@@ -4831,104 +4589,137 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Column(
       children: [
-        // 请求编辑与发送行
+        // 请求编辑与发送行 (突出 URL 核心操作区，独立保存与发送按钮，优化点击热区)
         Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 42,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFCBD5E1), width: 1.1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    // HTTP Method 下拉
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<HttpMethod>(
-                          value: req.method,
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                              size: 16, color: Color(0xFF64748B)),
-                          items: HttpMethod.values.map((m) {
-                            return DropdownMenuItem(
-                              value: m,
-                              child: HttpMethodBadge(method: m),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setState(() {
-                                req.method = val;
-                              });
-                              _markCurrentTabDirty();
-                            }
-                          },
-                        ),
+              Row(
+                children: [
+                  // 核心 URL 操作输入框区域（带突出高光与立体阴影）
+                  Expanded(
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 1.5),
+                          ),
+                          BoxShadow(
+                            color: const Color(0xFF2563EB).withValues(alpha: 0.03),
+                            blurRadius: 1,
+                            offset: const Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          // HTTP Method 下拉
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<HttpMethod>(
+                                value: req.method,
+                                icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                                    size: 16, color: Color(0xFF64748B)),
+                                items: HttpMethod.values.map((m) {
+                                  return DropdownMenuItem(
+                                    value: m,
+                                    child: HttpMethodBadge(method: m),
+                                  );
+                                }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setState(() {
+                                      req.method = val;
+                                    });
+                                    _markCurrentTabDirty();
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+
+                          Container(width: 1, height: 20, color: const Color(0xFFE2E8F0)),
+
+                          // URL 输入框
+                          Expanded(
+                            child: TextFormField(
+                              controller: _urlController,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontFamily: AppFonts.codeFamily,
+                                fontFamilyFallback: AppFonts.codeFallback,
+                                color: Color(0xFF0F172A),
+                              ),
+                              decoration: const InputDecoration(
+                                hintText:
+                                    '输入请求 URL 或相对路径，如 {{baseUrl}}/get 或 /api/v1/users',
+                                hintStyle: TextStyle(
+                                    fontSize: 12, color: Color(0xFF94A3B8)),
+                                filled: false,
+                                isDense: true,
+                                contentPadding:
+                                    EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                              ),
+                              onChanged: (val) {
+                                setState(() {
+                                  req.url = val;
+                                });
+                                _markCurrentTabDirty();
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
+                  const SizedBox(width: 10),
 
-                    Container(width: 1, height: 22, color: const Color(0xFFE2E8F0)),
-
-                    // URL 输入框
-                    Expanded(
-                      child: TextFormField(
-                        controller: _urlController,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
-                          color: Color(0xFF0F172A),
-                        ),
-                        decoration: const InputDecoration(
-                          hintText:
-                              '输入请求 URL 或相对路径，如 {{baseUrl}}/get 或 /api/v1/users',
-                          hintStyle: TextStyle(
-                              fontSize: 12, color: Color(0xFF94A3B8)),
-                          filled: false,
-                          isDense: true,
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                        ),
-                        onChanged: (val) {
-                          setState(() {
-                            req.url = val;
-                          });
-                          _markCurrentTabDirty();
-                        },
-                      ),
-                    ),
-
-                    Container(width: 1, height: 22, color: const Color(0xFFE2E8F0)),
-
-                    // 保存按钮 (Ctrl + S)
-                    Tooltip(
-                      message: '保存 Ctrl+S',
+                  // 保存按钮 (独立次要操作，清晰热区与状态反馈)
+                  Tooltip(
+                    message: '保存当前请求 (Ctrl+S)',
+                    child: Material(
+                      color: Colors.transparent,
                       child: InkWell(
+                        borderRadius: BorderRadius.circular(8),
                         onTap: _saveCurrentTab,
-                        child: Container(
-                          height: 42,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          height: 40,
+                          padding: const EdgeInsets.symmetric(horizontal: 13),
+                          decoration: BoxDecoration(
+                            color: isCurrentDirty ? const Color(0xFFFFFBEB) : Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isCurrentDirty ? const Color(0xFFFBBF24) : const Color(0xFFCBD5E1),
+                              width: 1.1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.save_outlined,
                                 size: 15,
                                 color: isCurrentDirty
-                                    ? const Color(0xFFF59E0B)
+                                    ? const Color(0xFFD97706)
                                     : const Color(0xFF64748B),
                               ),
                               const SizedBox(width: 4),
@@ -4938,7 +4729,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   fontSize: 12,
                                   fontWeight: isCurrentDirty
                                       ? FontWeight.w700
-                                      : FontWeight.w500,
+                                      : FontWeight.w600,
                                   color: isCurrentDirty
                                       ? const Color(0xFFD97706)
                                       : const Color(0xFF475569),
@@ -4949,27 +4740,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
+                  ),
+                  const SizedBox(width: 8),
 
-                    // 发送按钮
-                    InkWell(
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(7),
-                        bottomRight: Radius.circular(7),
-                      ),
+                  // 发送按钮 (独立主操作按钮，高辨识度与充足点击热区)
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
                       onTap: isLoading ? null : _sendCurrentRequest,
                       child: Container(
-                        height: 42,
+                        height: 40,
                         padding: const EdgeInsets.symmetric(horizontal: 18),
                         decoration: BoxDecoration(
                           color: isLoading
                               ? const Color(0xFF93C5FD)
                               : const Color(0xFF2563EB),
-                          borderRadius: const BorderRadius.only(
-                            topRight: Radius.circular(7),
-                            bottomRight: Radius.circular(7),
-                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             if (isLoading)
                               const SizedBox(
@@ -4996,72 +4793,71 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               if (_workspace.showUrlPreviewBar) ...[
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
 
-                // 实际解析目标预览卡片
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.link_rounded,
-                          size: 14, color: Color(0xFF2563EB)),
-                      const SizedBox(width: 5),
-                      const Text(
-                        '实际请求目标: ',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Expanded(
-                        child: SelectableText(
-                          resolvedPreviewUrl.isEmpty
-                              ? '未填写'
-                              : resolvedPreviewUrl,
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: Color(0xFF1E293B),
-                            fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                        ),
-                      ),
-                      if (resolvedPreviewUrl.isNotEmpty)
-                        Tooltip(
-                          message: '复制解析后完整 URL',
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(4),
-                            onTap: () {
-                              Clipboard.setData(
-                                  ClipboardData(text: resolvedPreviewUrl));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('已复制解析后完整 URL'),
-                                  duration: Duration(milliseconds: 1200),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.all(2.0),
-                              child: Icon(Icons.copy_rounded,
-                                  size: 13, color: Color(0xFF94A3B8)),
+                // 实际解析目标预览 (弱化呈现，节省垂直空间，支持悬浮完整提示与复制)
+                Tooltip(
+                  message: resolvedPreviewUrl.isEmpty
+                      ? '未配置请求目标'
+                      : '实际解析目标完整 URL: $resolvedPreviewUrl\n点击可快捷复制',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(4),
+                    onTap: resolvedPreviewUrl.isNotEmpty
+                        ? () {
+                            Clipboard.setData(
+                                ClipboardData(text: resolvedPreviewUrl));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('已复制解析后完整 URL'),
+                                duration: Duration(milliseconds: 1200),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        : null,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.link_rounded,
+                              size: 13, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 4),
+                          const Text(
+                            '实际请求: ',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: Color(0xFF94A3B8),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ),
-                    ],
+                          Expanded(
+                            child: Text(
+                              resolvedPreviewUrl.isEmpty
+                                  ? '未填写'
+                                  : resolvedPreviewUrl,
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                color: Color(0xFF64748B),
+                                fontFamily: AppFonts.codeFamily,
+                                fontFamilyFallback: AppFonts.codeFallback,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (resolvedPreviewUrl.isNotEmpty) ...[
+                            const SizedBox(width: 4),
+                            const Icon(Icons.copy_rounded,
+                                size: 11, color: Color(0xFF94A3B8)),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -5069,10 +4865,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
 
-        // 4.3 请求参数与前置脚本配置子标签
+        // 4.3 请求参数与前置脚本配置子标签 (现代化 Segmented Pill 胶囊分段控制器)
         Container(
-          height: 36,
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
           decoration: const BoxDecoration(
+            color: Color(0xFFF1F5F9), // 优雅通透的底槽
             border: Border(
               top: BorderSide(color: Color(0xFFE2E8F0)),
               bottom: BorderSide(color: Color(0xFFE2E8F0)),
@@ -5081,115 +4879,152 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: TabBar(
             controller: _reqTabController,
             isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            splashFactory: NoSplash.splashFactory,
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
             labelColor: const Color(0xFF2563EB),
             unselectedLabelColor: const Color(0xFF64748B),
-            indicatorColor: const Color(0xFF2563EB),
-            indicatorWeight: 2,
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicatorPadding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+            indicator: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: const Color(0xFFBFDBFE), width: 1.1),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.08),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1.5),
+                ),
+              ],
+            ),
             labelStyle:
                 const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            unselectedLabelStyle:
+                const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             tabs: [
               Tab(
-                child: Row(
-                  children: [
-                    const Text('Params'),
-                    if (req.params.isNotEmpty) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Params'),
+                      if (req.params.isNotEmpty) ...[
+                        const SizedBox(width: 5),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${req.params.length}',
+                            style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF2563EB),
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
-                        child: Text(
-                          '${req.params.length}',
-                          style: const TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF2563EB),
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
               Tab(
-                child: Row(
-                  children: [
-                    const Text('Headers'),
-                    if (req.headers.isNotEmpty) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Headers'),
+                      if (req.headers.isNotEmpty) ...[
+                        const SizedBox(width: 5),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${req.headers.length}',
+                            style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF2563EB),
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
-                        child: Text(
-                          '${req.headers.length}',
-                          style: const TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF2563EB),
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
               Tab(
-                child: Row(
-                  children: [
-                    const Text('Body'),
-                    if (req.bodyType != BodyType.none) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF2563EB),
-                          shape: BoxShape.circle,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Body'),
+                      if (req.bodyType != BodyType.none) ...[
+                        const SizedBox(width: 5),
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF2563EB),
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
               Tab(
-                child: Row(
-                  children: [
-                    const Text('⚡ 前置脚本'),
-                    if (req.preRequestScript.trim().isNotEmpty) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF10B981),
-                          shape: BoxShape.circle,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('⚡ 前置脚本'),
+                      if (req.preRequestScript.trim().isNotEmpty) ...[
+                        const SizedBox(width: 5),
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
               Tab(
-                child: Row(
-                  children: [
-                    const Text('🧪 测试断言'),
-                    if (req.postRequestScript.trim().isNotEmpty) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF10B981),
-                          shape: BoxShape.circle,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🧪 测试断言'),
+                      if (req.postRequestScript.trim().isNotEmpty) ...[
+                        const SizedBox(width: 5),
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -5254,80 +5089,77 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // Body 类型 Radio 平铺栏 + Raw 格式下拉选择
+                              // Body 类型分段控制器 (Segmented Control) + Raw 格式下拉选择 + 暗色代码模式
                               Container(
                                 height: 34,
                                 margin: const EdgeInsets.only(bottom: 8),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF8FAFC),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                      color: const Color(0xFFE2E8F0)),
-                                ),
                                 child: Row(
                                   children: [
-                                    _buildBodyTypeRadioOption(
-                                      label: 'none',
-                                      selected: req.bodyType == BodyType.none,
-                                      onTap: () {
-                                        setState(() {
-                                          req.bodyType = BodyType.none;
-                                        });
-                                        _markCurrentTabDirty();
-                                      },
+                                    // 现代化分段控制器替代传统单选圆圈
+                                    Container(
+                                      padding: const EdgeInsets.all(2.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F5F9),
+                                        borderRadius: BorderRadius.circular(7),
+                                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _buildBodySegmentItem(
+                                            label: 'none',
+                                            isSelected: req.bodyType == BodyType.none,
+                                            onTap: () {
+                                              setState(() {
+                                                req.bodyType = BodyType.none;
+                                              });
+                                              _markCurrentTabDirty();
+                                            },
+                                          ),
+                                          _buildBodySegmentItem(
+                                            label: 'form-data',
+                                            isSelected: req.bodyType == BodyType.formData,
+                                            onTap: () {
+                                              setState(() {
+                                                req.bodyType = BodyType.formData;
+                                              });
+                                              _markCurrentTabDirty();
+                                            },
+                                          ),
+                                          _buildBodySegmentItem(
+                                            label: 'urlencoded',
+                                            isSelected: req.bodyType == BodyType.formUrlEncoded,
+                                            onTap: () {
+                                              setState(() {
+                                                req.bodyType = BodyType.formUrlEncoded;
+                                              });
+                                              _markCurrentTabDirty();
+                                            },
+                                          ),
+                                          _buildBodySegmentItem(
+                                            label: 'raw',
+                                            isSelected: req.bodyType == BodyType.json || req.bodyType == BodyType.raw,
+                                            onTap: () {
+                                              setState(() {
+                                                req.bodyType = BodyType.raw;
+                                              });
+                                              _markCurrentTabDirty();
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    const SizedBox(width: 16),
-                                    _buildBodyTypeRadioOption(
-                                      label: 'form-data',
-                                      selected:
-                                          req.bodyType == BodyType.formData,
-                                      onTap: () {
-                                        setState(() {
-                                          req.bodyType = BodyType.formData;
-                                        });
-                                        _markCurrentTabDirty();
-                                      },
-                                    ),
-                                    const SizedBox(width: 16),
-                                    _buildBodyTypeRadioOption(
-                                      label: 'urlencoded',
-                                      selected: req.bodyType ==
-                                          BodyType.formUrlEncoded,
-                                      onTap: () {
-                                        setState(() {
-                                          req.bodyType =
-                                              BodyType.formUrlEncoded;
-                                        });
-                                        _markCurrentTabDirty();
-                                      },
-                                    ),
-                                    const SizedBox(width: 16),
-                                    _buildBodyTypeRadioOption(
-                                      label: 'raw',
-                                      selected: req.bodyType == BodyType.json ||
-                                          req.bodyType == BodyType.raw,
-                                      onTap: () {
-                                        setState(() {
-                                          req.bodyType = BodyType.raw;
-                                        });
-                                        _markCurrentTabDirty();
-                                      },
-                                    ),
+
                                     if (req.bodyType == BodyType.json ||
                                         req.bodyType == BodyType.raw) ...[
-                                      const SizedBox(width: 10),
+                                      const SizedBox(width: 8),
                                       Container(
-                                        height: 24,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8),
+                                        height: 28,
+                                        padding: const EdgeInsets.symmetric(horizontal: 8),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                          border: Border.all(
-                                              color: const Color(0xFFCBD5E1)),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: const Color(0xFFCBD5E1)),
                                         ),
                                         child: DropdownButtonHideUnderline(
                                           child: DropdownButton<String>(
@@ -5337,14 +5169,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               'xml',
                                               'html',
                                               'javascript'
-                                            ].contains(
-                                                    req.rawFormat.toLowerCase())
+                                            ].contains(req.rawFormat.toLowerCase())
                                                 ? req.rawFormat.toLowerCase()
                                                 : 'json',
                                             isDense: true,
                                             icon: const Icon(
-                                                Icons
-                                                    .keyboard_arrow_down_rounded,
+                                                Icons.keyboard_arrow_down_rounded,
                                                 size: 15,
                                                 color: Color(0xFF2563EB)),
                                             style: const TextStyle(
@@ -5353,26 +5183,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               color: Color(0xFF2563EB),
                                             ),
                                             items: const [
-                                              DropdownMenuItem(
-                                                value: 'json',
-                                                child: Text('JSON'),
-                                              ),
-                                              DropdownMenuItem(
-                                                value: 'text',
-                                                child: Text('Text'),
-                                              ),
-                                              DropdownMenuItem(
-                                                value: 'xml',
-                                                child: Text('XML'),
-                                              ),
-                                              DropdownMenuItem(
-                                                value: 'html',
-                                                child: Text('HTML'),
-                                              ),
-                                              DropdownMenuItem(
-                                                value: 'javascript',
-                                                child: Text('JavaScript'),
-                                              ),
+                                              DropdownMenuItem(value: 'json', child: Text('JSON')),
+                                              DropdownMenuItem(value: 'text', child: Text('Text')),
+                                              DropdownMenuItem(value: 'xml', child: Text('XML')),
+                                              DropdownMenuItem(value: 'html', child: Text('HTML')),
+                                              DropdownMenuItem(value: 'javascript', child: Text('JavaScript')),
                                             ],
                                             onChanged: (val) {
                                               if (val != null) {
@@ -5389,7 +5204,68 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     ],
+
                                     const Spacer(),
+
+                                    // 代码编辑器深浅主题切换按钮
+                                    Tooltip(
+                                      message: _editorDarkMode
+                                          ? '切换为明亮代码区'
+                                          : '切换为暗色代码模式 (突出代码高亮)',
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(5),
+                                        onTap: () {
+                                          setState(() {
+                                            _editorDarkMode = !_editorDarkMode;
+                                            _bodyController.isDark = _editorDarkMode;
+                                            _preScriptController.isDark = _editorDarkMode;
+                                            _postScriptController.isDark = _editorDarkMode;
+                                          });
+                                        },
+                                        child: Container(
+                                          height: 26,
+                                          padding: const EdgeInsets.symmetric(horizontal: 7),
+                                          decoration: BoxDecoration(
+                                            color: _editorDarkMode
+                                                ? const Color(0xFF1E293B)
+                                                : const Color(0xFFF1F5F9),
+                                            borderRadius: BorderRadius.circular(5),
+                                            border: Border.all(
+                                              color: _editorDarkMode
+                                                  ? const Color(0xFF334155)
+                                                  : const Color(0xFFE2E8F0),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                _editorDarkMode
+                                                    ? Icons.light_mode_rounded
+                                                    : Icons.dark_mode_rounded,
+                                                size: 13,
+                                                color: _editorDarkMode
+                                                    ? const Color(0xFFFBBF24)
+                                                    : const Color(0xFF64748B),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                _editorDarkMode ? '暗色代码' : '明亮代码',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: _editorDarkMode
+                                                      ? const Color(0xFFF8FAFC)
+                                                      : const Color(0xFF475569),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+
                                     if ((req.bodyType == BodyType.json ||
                                             req.bodyType == BodyType.raw) &&
                                         req.rawFormat.toLowerCase() == 'json')
@@ -5399,8 +5275,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 8, vertical: 2),
                                           minimumSize: Size.zero,
-                                          tapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                         ),
                                         icon: const Icon(
                                             Icons.auto_fix_high_rounded,
@@ -5463,47 +5338,64 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 )
                               else
                                 Expanded(
-                                  child: TextFormField(
-                                    controller: _bodyController,
-                                    maxLines: null,
-                                    expands: true,
-                                    textAlign: TextAlign.left,
-                                    textAlignVertical: TextAlignVertical.top,
-                                    style: const TextStyle(
-                                      fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
-                                      fontSize: 13,
-                                      height: 1.45,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 150),
+                                    decoration: BoxDecoration(
+                                      color: _editorDarkMode
+                                          ? const Color(0xFF0F172A)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(7),
+                                      border: Border.all(
+                                        color: _editorDarkMode
+                                            ? const Color(0xFF334155)
+                                            : const Color(0xFFCBD5E1),
+                                        width: 1.1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.03),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ],
                                     ),
-                                    decoration: InputDecoration(
-                                      hintText:
-                                          '在此输入 ${req.rawFormat.toUpperCase()} 请求体内容...',
-                                      hintStyle: TextStyle(
-                                          color: Colors.grey.shade400,
-                                          fontSize: 12),
-                                      filled: true,
-                                      fillColor: const Color(0xFFF8FAFC),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFFE2E8F0)),
+                                    child: TextFormField(
+                                      controller: _bodyController,
+                                      maxLines: null,
+                                      expands: true,
+                                      textAlign: TextAlign.left,
+                                      textAlignVertical: TextAlignVertical.top,
+                                      cursorColor: _editorDarkMode
+                                          ? const Color(0xFF60A5FA)
+                                          : const Color(0xFF2563EB),
+                                      style: TextStyle(
+                                        fontFamily: AppFonts.codeFamily,
+                                        fontFamilyFallback: AppFonts.codeFallback,
+                                        fontSize: 13,
+                                        height: 1.45,
+                                        color: _editorDarkMode
+                                            ? const Color(0xFFF8FAFC)
+                                            : const Color(0xFF0F172A),
                                       ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFFE2E8F0)),
+                                      decoration: InputDecoration(
+                                        hintText:
+                                            '在此输入 ${req.rawFormat.toUpperCase()} 请求体内容...',
+                                        hintStyle: TextStyle(
+                                            color: _editorDarkMode
+                                                ? const Color(0xFF64748B)
+                                                : Colors.grey.shade400,
+                                            fontSize: 12),
+                                        filled: false,
+                                        border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                        contentPadding: const EdgeInsets.all(12),
                                       ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFF2563EB),
-                                            width: 1.2),
-                                      ),
-                                      contentPadding: const EdgeInsets.all(12),
+                                      onChanged: (val) {
+                                        req.bodyContent = val;
+                                        _markCurrentTabDirty();
+                                      },
                                     ),
-                                    onChanged: (val) {
-                                      req.bodyContent = val;
-                                      _markCurrentTabDirty();
-                                    },
                                   ),
                                 ),
                             ],
@@ -5545,48 +5437,65 @@ console.log("签名计算完成: " + sign);
                               ),
                               const SizedBox(height: 6),
                               Expanded(
-                                child: TextFormField(
-                                  controller: _preScriptController,
-                                  maxLines: null,
-                                  expands: true,
-                                  textAlign: TextAlign.left,
-                                  textAlignVertical: TextAlignVertical.top,
-                                  style: const TextStyle(
-                                    fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
-                                    fontSize: 12.5,
-                                    height: 1.45,
-                                    color: Color(0xFF0F172A),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  decoration: BoxDecoration(
+                                    color: _editorDarkMode
+                                        ? const Color(0xFF0F172A)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(7),
+                                    border: Border.all(
+                                      color: _editorDarkMode
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFCBD5E1),
+                                      width: 1.1,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.03),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
                                   ),
-                                  decoration: InputDecoration(
-                                    hintText:
-                                        '// 编写前置 JavaScript 脚本...\npm.environment.set("token", "xxx");',
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey.shade400,
-                                      fontSize: 12,
+                                  child: TextFormField(
+                                    controller: _preScriptController,
+                                    maxLines: null,
+                                    expands: true,
+                                    textAlign: TextAlign.left,
+                                    textAlignVertical: TextAlignVertical.top,
+                                    cursorColor: _editorDarkMode
+                                        ? const Color(0xFF60A5FA)
+                                        : const Color(0xFF2563EB),
+                                    style: TextStyle(
+                                      fontFamily: AppFonts.codeFamily,
+                                      fontFamilyFallback: AppFonts.codeFallback,
+                                      fontSize: 12.5,
+                                      height: 1.45,
+                                      color: _editorDarkMode
+                                          ? const Color(0xFFF8FAFC)
+                                          : const Color(0xFF0F172A),
                                     ),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: const BorderSide(
-                                          color: Color(0xFFE2E8F0)),
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          '// 编写前置 JavaScript 脚本...\npm.environment.set("token", "xxx");',
+                                      hintStyle: TextStyle(
+                                        color: _editorDarkMode
+                                            ? const Color(0xFF64748B)
+                                            : Colors.grey.shade400,
+                                        fontSize: 12,
+                                      ),
+                                      filled: false,
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      contentPadding: const EdgeInsets.all(12),
                                     ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: const BorderSide(
-                                          color: Color(0xFFE2E8F0)),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: const BorderSide(
-                                          color: Color(0xFF2563EB), width: 1.2),
-                                    ),
-                                    contentPadding: const EdgeInsets.all(12),
+                                    onChanged: (val) {
+                                      req.preRequestScript = val;
+                                      _markCurrentTabDirty();
+                                    },
                                   ),
-                                  onChanged: (val) {
-                                    req.preRequestScript = val;
-                                    _markCurrentTabDirty();
-                                  },
                                 ),
                               ),
                             ],
@@ -5625,48 +5534,65 @@ pm.test("Status code is 200", function () {
                               ),
                               const SizedBox(height: 6),
                               Expanded(
-                                child: TextFormField(
-                                  controller: _postScriptController,
-                                  maxLines: null,
-                                  expands: true,
-                                  textAlign: TextAlign.left,
-                                  textAlignVertical: TextAlignVertical.top,
-                                  style: const TextStyle(
-                                    fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
-                                    fontSize: 12.5,
-                                    height: 1.45,
-                                    color: Color(0xFF0F172A),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  decoration: BoxDecoration(
+                                    color: _editorDarkMode
+                                        ? const Color(0xFF0F172A)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(7),
+                                    border: Border.all(
+                                      color: _editorDarkMode
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFCBD5E1),
+                                      width: 1.1,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.03),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
                                   ),
-                                  decoration: InputDecoration(
-                                    hintText:
-                                        '// 编写测试断言...\npm.test("Status 200", function() { ... });',
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey.shade400,
-                                      fontSize: 12,
+                                  child: TextFormField(
+                                    controller: _postScriptController,
+                                    maxLines: null,
+                                    expands: true,
+                                    textAlign: TextAlign.left,
+                                    textAlignVertical: TextAlignVertical.top,
+                                    cursorColor: _editorDarkMode
+                                        ? const Color(0xFF60A5FA)
+                                        : const Color(0xFF2563EB),
+                                    style: TextStyle(
+                                      fontFamily: AppFonts.codeFamily,
+                                      fontFamilyFallback: AppFonts.codeFallback,
+                                      fontSize: 12.5,
+                                      height: 1.45,
+                                      color: _editorDarkMode
+                                          ? const Color(0xFFF8FAFC)
+                                          : const Color(0xFF0F172A),
                                     ),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: const BorderSide(
-                                          color: Color(0xFFE2E8F0)),
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          '// 编写测试断言...\npm.test("Status 200", function() { ... });',
+                                      hintStyle: TextStyle(
+                                        color: _editorDarkMode
+                                            ? const Color(0xFF64748B)
+                                            : Colors.grey.shade400,
+                                        fontSize: 12,
+                                      ),
+                                      filled: false,
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      contentPadding: const EdgeInsets.all(12),
                                     ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: const BorderSide(
-                                          color: Color(0xFFE2E8F0)),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                      borderSide: const BorderSide(
-                                          color: Color(0xFF2563EB), width: 1.2),
-                                    ),
-                                    contentPadding: const EdgeInsets.all(12),
+                                    onChanged: (val) {
+                                      req.postRequestScript = val;
+                                      _markCurrentTabDirty();
+                                    },
                                   ),
-                                  onChanged: (val) {
-                                    req.postRequestScript = val;
-                                    _markCurrentTabDirty();
-                                  },
                                 ),
                               ),
                             ],
@@ -5746,23 +5672,24 @@ pm.test("Status code is 200", function () {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 8, vertical: 3.5),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: const Color(0xFFFFFBEB),
                                         border: Border.all(
-                                            color: const Color(0xFFE2E8F0)),
+                                            color: const Color(0xFFFDE68A),
+                                            width: 0.8),
                                         borderRadius: BorderRadius.circular(5),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.timer_outlined,
+                                          const Icon(Icons.speed_rounded,
                                               size: 13,
-                                              color: Color(0xFF64748B)),
+                                              color: Color(0xFFD97706)),
                                           const SizedBox(width: 4),
                                           Text(
                                             '${response.durationMs} ms',
                                             style: const TextStyle(
                                               fontSize: 11.5,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF334155),
+                                              color: Color(0xFFB45309),
                                             ),
                                           ),
                                         ],
@@ -5773,23 +5700,24 @@ pm.test("Status code is 200", function () {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 8, vertical: 3.5),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: const Color(0xFFEEF2FF),
                                         border: Border.all(
-                                            color: const Color(0xFFE2E8F0)),
+                                            color: const Color(0xFFC7D2FE),
+                                            width: 0.8),
                                         borderRadius: BorderRadius.circular(5),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.data_usage_outlined,
+                                          const Icon(Icons.inventory_2_outlined,
                                               size: 13,
-                                              color: Color(0xFF64748B)),
+                                              color: Color(0xFF6366F1)),
                                           const SizedBox(width: 4),
                                           Text(
                                             '${(response.sizeBytes / 1024).toStringAsFixed(2)} KB',
                                             style: const TextStyle(
                                               fontSize: 11.5,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF334155),
+                                              color: Color(0xFF4338CA),
                                             ),
                                           ),
                                         ],
@@ -5998,14 +5926,70 @@ pm.test("Status code is 200", function () {
                                         },
                                       ),
                                     ),
+                                    const SizedBox(width: 8),
+                                    Tooltip(
+                                      message: _editorDarkMode
+                                          ? '切换明亮代码模式'
+                                          : '切换暗色代码模式',
+                                      child: OutlinedButton.icon(
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: _editorDarkMode
+                                              ? const Color(0xFFF1F5F9)
+                                              : const Color(0xFF334155),
+                                          backgroundColor: _editorDarkMode
+                                              ? const Color(0xFF1E293B)
+                                              : Colors.white,
+                                          side: BorderSide(
+                                            color: _editorDarkMode
+                                                ? const Color(0xFF475569)
+                                                : const Color(0xFFE2E8F0),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 9, vertical: 4),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(5)),
+                                        ),
+                                        icon: Icon(
+                                          _editorDarkMode
+                                              ? Icons.dark_mode_rounded
+                                              : Icons.light_mode_outlined,
+                                          size: 13,
+                                          color: _editorDarkMode
+                                              ? const Color(0xFFFBBF24)
+                                              : const Color(0xFF64748B),
+                                        ),
+                                        label: Text(
+                                          _editorDarkMode ? '深色' : '浅色',
+                                          style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _editorDarkMode = !_editorDarkMode;
+                                            _bodyController.isDark =
+                                                _editorDarkMode;
+                                            _preScriptController.isDark =
+                                                _editorDarkMode;
+                                            _postScriptController.isDark =
+                                                _editorDarkMode;
+                                          });
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
 
-                              // 响应视图子 Tab 标签
+                              // 响应视图子 Tab 标签 (精致下划线与徽章设计，区别于上方请求胶囊切换器)
                               Container(
                                 height: 34,
                                 decoration: const BoxDecoration(
+                                  color: Color(0xFFFAFAFA),
                                   border: Border(
                                     bottom:
                                         BorderSide(color: Color(0xFFE2E8F0)),
@@ -6014,23 +5998,84 @@ pm.test("Status code is 200", function () {
                                 child: TabBar(
                                   controller: _resTabController,
                                   isScrollable: true,
+                                  tabAlignment: TabAlignment.start,
                                   labelColor: const Color(0xFF2563EB),
                                   unselectedLabelColor: const Color(0xFF64748B),
                                   indicatorColor: const Color(0xFF2563EB),
-                                  indicatorWeight: 2,
+                                  indicatorWeight: 2.5,
+                                  indicatorSize: TabBarIndicatorSize.label,
                                   labelStyle: const TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.bold),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600),
+                                  unselectedLabelStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.normal),
                                   tabs: [
                                     const Tab(text: '响应'),
                                     Tab(
-                                        text:
-                                            'Headers · ${response.headers.length}'),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('Headers'),
+                                          const SizedBox(width: 5),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 5, vertical: 1),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF1F5F9),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Text(
+                                              '${response.headers.length}',
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                color: Color(0xFF64748B),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                     Tab(
                                       child: Row(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text(
-                                              'Tests · ${response.testResults.length}'),
+                                          const Text('Tests'),
+                                          const SizedBox(width: 5),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 5, vertical: 1),
+                                            decoration: BoxDecoration(
+                                              color: response
+                                                      .testResults.isEmpty
+                                                  ? const Color(0xFFF1F5F9)
+                                                  : response.testResults.every(
+                                                          (t) => t.passed)
+                                                      ? const Color(0xFFECFDF5)
+                                                      : const Color(0xFFFEF2F2),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Text(
+                                              '${response.testResults.length}',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: response
+                                                        .testResults.isEmpty
+                                                    ? const Color(0xFF64748B)
+                                                    : response.testResults
+                                                            .every(
+                                                                (t) => t.passed)
+                                                        ? const Color(
+                                                            0xFF059669)
+                                                        : const Color(
+                                                            0xFFDC2626),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
                                           if (response
                                               .testResults.isNotEmpty) ...[
                                             const SizedBox(width: 4),
@@ -6050,8 +6095,36 @@ pm.test("Status code is 200", function () {
                                       ),
                                     ),
                                     Tab(
-                                        text:
-                                            'Console · ${response.consoleLogs.length}'),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('Console'),
+                                          if (response
+                                              .consoleLogs.isNotEmpty) ...[
+                                            const SizedBox(width: 5),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 1),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF1F5F9),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                '${response.consoleLogs.length}',
+                                                style: const TextStyle(
+                                                  fontSize: 10,
+                                                  color: Color(0xFF64748B),
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -6264,15 +6337,19 @@ pm.test("Status code is 200", function () {
                                         Expanded(
                                           child: Container(
                                             padding: const EdgeInsets.all(12),
-                                            color: const Color(0xFFF8FAFC),
+                                            color: _editorDarkMode
+                                                ? const Color(0xFF0F172A)
+                                                : const Color(0xFFF8FAFC),
                                             child: response.prettyBody.isEmpty
-                                                ? const Align(
+                                                ? Align(
                                                     alignment:
                                                         Alignment.topLeft,
                                                     child: Text(
                                                       '响应体为空',
                                                       style: TextStyle(
-                                                          color: Colors.grey,
+                                                          color: _editorDarkMode
+                                                              ? const Color(0xFF64748B)
+                                                              : Colors.grey,
                                                           fontSize: 12),
                                                     ),
                                                   )
@@ -6327,6 +6404,8 @@ pm.test("Status code is 200", function () {
                                                               _responseSearchQuery,
                                                           activeMatchIndex:
                                                               _responseSearchActiveIndex,
+                                                          isDark:
+                                                              _editorDarkMode,
                                                           onMatchCountChanged:
                                                               (count) {
                                                             if (_responseSearchMatchCount !=
@@ -6356,10 +6435,13 @@ pm.test("Status code is 200", function () {
                                                             });
                                                           },
                                                           style:
-                                                              const TextStyle(
+                                                              TextStyle(
                                                             fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
                                                             fontSize: 12.5,
                                                             height: 1.45,
+                                                            color: _editorDarkMode
+                                                                ? const Color(0xFFE2E8F0)
+                                                                : const Color(0xFF1E293B),
                                                           ),
                                                         ),
                                                       ),
@@ -6609,46 +6691,38 @@ pm.test("Status code is 200", function () {
     );
   }
 
-  /// 构建平铺 Body 类型 Radio 选项项 (none / form-data / urlencoded / raw)
-  Widget _buildBodyTypeRadioOption({
+  /// 构建现代化 Body 类型 Segmented Control 单项 (none / form-data / urlencoded / raw)
+  Widget _buildBodySegmentItem({
     required String label,
-    required bool selected,
+    required bool isSelected,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                border: Border.all(
-                  color: selected
-                      ? const Color(0xFF2563EB)
-                      : const Color(0xFF94A3B8),
-                  width: selected ? 4.2 : 1.4,
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: selected
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFF64748B),
-              ),
-            ),
-          ],
+      borderRadius: BorderRadius.circular(5),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(5),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+          ),
         ),
       ),
     );

@@ -5,15 +5,25 @@ import 'package:flutter/services.dart';
 
 /// 具有 JSON 语法实时高亮能力的 TextEditingController
 class JsonSyntaxHighlightController extends TextEditingController {
-  JsonSyntaxHighlightController({super.text});
+  JsonSyntaxHighlightController({super.text, this.isDark = false});
 
-  // 语法高亮色彩定义
+  bool isDark;
+
+  // 语法高亮色彩定义 (明亮模式基准)
   static const Color keyColor = Color(0xFF1D4ED8); // 键名：深蓝色
   static const Color stringColor = Color(0xFF047857); // 字符串：翡翠绿
   static const Color numberColor = Color(0xFFD97706); // 数值：琥珀橙
   static const Color boolNullColor = Color(0xFF7C3AED); // 布尔/Null：紫罗兰
   static const Color punctuationColor = Color(0xFF475569); // 括号与逗号：石板灰
   static const Color defaultColor = Color(0xFF1E293B); // 默认文本
+
+  // 针对深浅模式动态适配的配色属性
+  Color get activeKeyColor => isDark ? const Color(0xFF93C5FD) : keyColor;
+  Color get activeStringColor => isDark ? const Color(0xFF86EFAC) : stringColor;
+  Color get activeNumberColor => isDark ? const Color(0xFFFDBA74) : numberColor;
+  Color get activeBoolNullColor => isDark ? const Color(0xFFC4B5FD) : boolNullColor;
+  Color get activePunctuationColor => isDark ? const Color(0xFF94A3B8) : punctuationColor;
+  Color get activeDefaultColor => isDark ? const Color(0xFFF1F5F9) : defaultColor;
 
   // JSON 语法标记匹配正则
   static final RegExp _jsonRegex = RegExp(
@@ -31,10 +41,10 @@ class JsonSyntaxHighlightController extends TextEditingController {
     required bool withComposing,
   }) {
     final baseStyle = style ??
-        const TextStyle(
+        TextStyle(
           fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
           fontSize: 13,
-          color: defaultColor,
+          color: activeDefaultColor,
           height: 1.45,
         );
 
@@ -58,33 +68,33 @@ class JsonSyntaxHighlightController extends TextEditingController {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: keyColor,
+            color: activeKeyColor,
             fontWeight: FontWeight.w600,
           ),
         ));
       } else if (match.namedGroup('string') != null) {
         spans.add(TextSpan(
           text: match.group(0),
-          style: baseStyle.copyWith(color: stringColor),
+          style: baseStyle.copyWith(color: activeStringColor),
         ));
       } else if (match.namedGroup('boolNull') != null) {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: boolNullColor,
+            color: activeBoolNullColor,
             fontWeight: FontWeight.bold,
           ),
         ));
       } else if (match.namedGroup('number') != null) {
         spans.add(TextSpan(
           text: match.group(0),
-          style: baseStyle.copyWith(color: numberColor),
+          style: baseStyle.copyWith(color: activeNumberColor),
         ));
       } else if (match.namedGroup('punct') != null) {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: punctuationColor,
+            color: activePunctuationColor,
             fontWeight: FontWeight.w600,
           ),
         ));
@@ -111,9 +121,11 @@ class JsonSyntaxHighlightController extends TextEditingController {
 
 /// 具有 JavaScript 脚本语法实时高亮能力的 TextEditingController
 class JsSyntaxHighlightController extends TextEditingController {
-  JsSyntaxHighlightController({super.text});
+  JsSyntaxHighlightController({super.text, this.isDark = false});
 
-  // JavaScript 语法高亮配色定义
+  bool isDark;
+
+  // JavaScript 语法高亮配色定义 (明亮模式基准)
   static const Color commentColor = Color(0xFF64748B); // 注释：石板灰斜体
   static const Color stringColor = Color(0xFF047857); // 字符串/模板字符串：翡翠绿
   static const Color keywordColor = Color(0xFF7C3AED); // 关键字：紫罗兰
@@ -125,6 +137,19 @@ class JsSyntaxHighlightController extends TextEditingController {
   static const Color numberColor = Color(0xFFD97706); // 数值：琥珀橙
   static const Color punctuationColor = Color(0xFF475569); // 运算符与括号：深灰
   static const Color defaultColor = Color(0xFF0F172A); // 默认标识符文本
+
+  // 针对深浅模式动态适配的配色属性
+  Color get activeCommentColor => isDark ? const Color(0xFF94A3B8) : commentColor;
+  Color get activeStringColor => isDark ? const Color(0xFF86EFAC) : stringColor;
+  Color get activeKeywordColor => isDark ? const Color(0xFFC4B5FD) : keywordColor;
+  Color get activeLiteralColor => isDark ? const Color(0xFFF472B6) : literalColor;
+  Color get activeBuiltinColor => isDark ? const Color(0xFF38BDF8) : builtinColor;
+  Color get activeSdkPropColor => isDark ? const Color(0xFF60A5FA) : sdkPropColor;
+  Color get activeFunctionColor => isDark ? const Color(0xFF93C5FD) : functionColor;
+  Color get activeObjKeyColor => isDark ? const Color(0xFF7DD3FC) : objKeyColor;
+  Color get activeNumberColor => isDark ? const Color(0xFFFDBA74) : numberColor;
+  Color get activePunctuationColor => isDark ? const Color(0xFFCBD5E1) : punctuationColor;
+  Color get activeDefaultColor => isDark ? const Color(0xFFF8FAFC) : defaultColor;
 
   static final RegExp _jsRegex = RegExp(
     r'(?<comment>//[^\n]*|/\*[\s\S]*?\*/)'
@@ -148,10 +173,10 @@ class JsSyntaxHighlightController extends TextEditingController {
     required bool withComposing,
   }) {
     final baseStyle = style ??
-        const TextStyle(
+        TextStyle(
           fontFamily: AppFonts.codeFamily, fontFamilyFallback: AppFonts.codeFallback,
           fontSize: 12.5,
-          color: defaultColor,
+          color: activeDefaultColor,
           height: 1.45,
         );
 
@@ -175,20 +200,20 @@ class JsSyntaxHighlightController extends TextEditingController {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: commentColor,
+            color: activeCommentColor,
             fontStyle: FontStyle.italic,
           ),
         ));
       } else if (match.namedGroup('string') != null) {
         spans.add(TextSpan(
           text: match.group(0),
-          style: baseStyle.copyWith(color: stringColor),
+          style: baseStyle.copyWith(color: activeStringColor),
         ));
       } else if (match.namedGroup('keyword') != null) {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: keywordColor,
+            color: activeKeywordColor,
             fontWeight: FontWeight.w700,
           ),
         ));
@@ -196,7 +221,7 @@ class JsSyntaxHighlightController extends TextEditingController {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: literalColor,
+            color: activeLiteralColor,
             fontWeight: FontWeight.w700,
           ),
         ));
@@ -204,7 +229,7 @@ class JsSyntaxHighlightController extends TextEditingController {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: builtinColor,
+            color: activeBuiltinColor,
             fontWeight: FontWeight.w700,
           ),
         ));
@@ -212,7 +237,7 @@ class JsSyntaxHighlightController extends TextEditingController {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: sdkPropColor,
+            color: activeSdkPropColor,
             fontWeight: FontWeight.w600,
           ),
         ));
@@ -220,7 +245,7 @@ class JsSyntaxHighlightController extends TextEditingController {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: functionColor,
+            color: activeFunctionColor,
             fontWeight: FontWeight.w600,
           ),
         ));
@@ -228,19 +253,19 @@ class JsSyntaxHighlightController extends TextEditingController {
         spans.add(TextSpan(
           text: match.group(0),
           style: baseStyle.copyWith(
-            color: objKeyColor,
+            color: activeObjKeyColor,
             fontWeight: FontWeight.w600,
           ),
         ));
       } else if (match.namedGroup('number') != null) {
         spans.add(TextSpan(
           text: match.group(0),
-          style: baseStyle.copyWith(color: numberColor),
+          style: baseStyle.copyWith(color: activeNumberColor),
         ));
       } else if (match.namedGroup('punct') != null) {
         spans.add(TextSpan(
           text: match.group(0),
-          style: baseStyle.copyWith(color: punctuationColor),
+          style: baseStyle.copyWith(color: activePunctuationColor),
         ));
       } else {
         spans.add(TextSpan(
@@ -272,6 +297,7 @@ class JsonHighlightedViewer extends StatefulWidget {
   final ValueChanged<int>? onMatchCountChanged;
   final void Function(String path, String? keyName, List<dynamic> arrayData)?
       onViewArrayAsTable;
+  final bool isDark;
 
   const JsonHighlightedViewer({
     super.key,
@@ -281,6 +307,7 @@ class JsonHighlightedViewer extends StatefulWidget {
     this.activeMatchIndex = 0,
     this.onMatchCountChanged,
     this.onViewArrayAsTable,
+    this.isDark = false,
   });
 
   @override
@@ -650,78 +677,83 @@ class _JsonHighlightedViewerState extends State<JsonHighlightedViewer> {
 
     _notifyAndScrollIfNeeded(matchCounter, queryLower);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Stack(
       children: [
-        // 顶部快捷展开/收起工具条
-        Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Row(
-            children: [
-              InkWell(
-                onTap: _expandAllNodes,
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.unfold_more_rounded,
-                          size: 13, color: Color(0xFF475569)),
-                      SizedBox(width: 3),
-                      Text(
-                        '全部展开',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF475569),
-                            fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
-              InkWell(
-                onTap: _collapseAllSubNodes,
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.unfold_less_rounded,
-                          size: 13, color: Color(0xFF475569)),
-                      SizedBox(width: 3),
-                      Text(
-                        '全部收起',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF475569),
-                            fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+        SelectionArea(
+          child: Padding(
+            // 右上角留出小边距给浮动图标工具条，第一行代码直接顶格呈现
+            padding: const EdgeInsets.only(right: 54),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: lines,
+            ),
           ),
         ),
-        SelectionArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: lines,
+
+        // 右上角精简图标工具条（全部展开/全部收起），极大节省纵向视野
+        Positioned(
+          top: 0,
+          right: 0,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: widget.isDark
+                  ? const Color(0xFF1E293B).withValues(alpha: 0.9)
+                  : Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: widget.isDark
+                    ? const Color(0xFF334155)
+                    : const Color(0xFFE2E8F0),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Tooltip(
+                  message: '全部展开',
+                  child: InkWell(
+                    onTap: _expandAllNodes,
+                    borderRadius: BorderRadius.circular(4),
+                    child: Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: Icon(
+                        Icons.unfold_more_rounded,
+                        size: 14,
+                        color: widget.isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 2),
+                Tooltip(
+                  message: '全部收起',
+                  child: InkWell(
+                    onTap: _collapseAllSubNodes,
+                    borderRadius: BorderRadius.circular(4),
+                    child: Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: Icon(
+                        Icons.unfold_less_rounded,
+                        size: 14,
+                        color: widget.isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -740,11 +772,15 @@ class _JsonHighlightedViewerState extends State<JsonHighlightedViewer> {
     required List<Widget> outLines,
   }) {
     final keyStyle = baseStyle.copyWith(
-      color: JsonSyntaxHighlightController.keyColor,
+      color: widget.isDark
+          ? const Color(0xFF93C5FD)
+          : JsonSyntaxHighlightController.keyColor,
       fontWeight: FontWeight.w600,
     );
     final punctStyle = baseStyle.copyWith(
-      color: JsonSyntaxHighlightController.punctuationColor,
+      color: widget.isDark
+          ? const Color(0xFF94A3B8)
+          : JsonSyntaxHighlightController.punctuationColor,
       fontWeight: FontWeight.w600,
     );
     final commaSpan = isLast ? null : TextSpan(text: ',', style: punctStyle);
@@ -945,15 +981,21 @@ class _JsonHighlightedViewerState extends State<JsonHighlightedViewer> {
     if (node is String) {
       valueText = json.encode(node);
       valueStyle = baseStyle.copyWith(
-          color: JsonSyntaxHighlightController.stringColor);
+          color: widget.isDark
+              ? const Color(0xFF86EFAC)
+              : JsonSyntaxHighlightController.stringColor);
     } else if (node is num) {
       valueText = node.toString();
       valueStyle = baseStyle.copyWith(
-          color: JsonSyntaxHighlightController.numberColor);
+          color: widget.isDark
+              ? const Color(0xFFFDBA74)
+              : JsonSyntaxHighlightController.numberColor);
     } else if (node is bool || node == null) {
       valueText = node.toString();
       valueStyle = baseStyle.copyWith(
-        color: JsonSyntaxHighlightController.boolNullColor,
+        color: widget.isDark
+            ? const Color(0xFFC4B5FD)
+            : JsonSyntaxHighlightController.boolNullColor,
         fontWeight: FontWeight.bold,
       );
     } else {
