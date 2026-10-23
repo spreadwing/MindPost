@@ -777,29 +777,11 @@ class _HelpDialogState extends State<HelpDialog> {
           ),
           child: Row(
             children: [
-              Container(
+              Image.asset(
+                'assets/app_logo.png',
                 width: 52,
                 height: 52,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x262563EB),
-                      offset: Offset(0, 4),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.bolt_rounded,
-                  color: Colors.white,
-                  size: 28,
-                ),
+                filterQuality: FilterQuality.medium,
               ),
               const SizedBox(width: 16),
               const Expanded(

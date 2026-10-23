@@ -907,17 +907,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // Logo & Title
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(5.5),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 17),
+              Image.asset(
+                'assets/app_logo.png',
+                width: 28,
+                height: 28,
+                filterQuality: FilterQuality.medium,
               ),
               const SizedBox(width: 9),
               const Text(
