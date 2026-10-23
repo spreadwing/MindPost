@@ -24,6 +24,7 @@ import 'widgets/container_settings_view.dart';
 import 'widgets/json_syntax_highlighter.dart';
 import 'widgets/help_dialog.dart';
 import 'app_fonts.dart';
+import '../services/tray_window_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -124,6 +125,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       onMcpLog: (_) {
         setState(() {});
       },
+    );
+
+    TrayWindowService.instance.init(
+      shouldMinimizeToTray: () => _workspace.minimizeToTrayOnClose,
     );
 
     _initData();
@@ -355,6 +360,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _postScriptController.dispose();
     _responseSearchController.dispose();
     _responseSearchFocusNode.dispose();
+    TrayWindowService.instance.dispose();
     super.dispose();
   }
 
@@ -1858,7 +1864,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         const SizedBox(height: 22),
         const Text(
-          '工作区视图辅助',
+          '工作区视图与系统交互',
           style: TextStyle(
             fontSize: 13.5,
             fontWeight: FontWeight.w700,
@@ -1874,6 +1880,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           onChanged: (val) {
             setModalState(() {
               _workspace.showUrlPreviewBar = val;
+            });
+            setState(() {});
+            _storageService.saveWorkspace(_workspace);
+          },
+        ),
+        const SizedBox(height: 10),
+        _buildSettingSwitchCard(
+          icon: Icons.archive_outlined,
+          title: '关闭主窗口时缩小到系统托盘',
+          subtitle: '开启后点击窗口右上角关闭按钮将最小化常驻在系统托盘，不退出后台任务与调试进程',
+          value: _workspace.minimizeToTrayOnClose,
+          onChanged: (val) {
+            setModalState(() {
+              _workspace.minimizeToTrayOnClose = val;
             });
             setState(() {});
             _storageService.saveWorkspace(_workspace);

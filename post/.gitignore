@@ -49,3 +49,6 @@ app.*.map.json
 
 # Output distributions
 /dist/
+
+# Audio files
+*.mp3

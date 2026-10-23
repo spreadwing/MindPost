@@ -1,9 +1,26 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 import 'ui/app_fonts.dart';
 import 'ui/home_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (!kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
+    await windowManager.ensureInitialized();
+    const windowOptions = WindowOptions(
+      minimumSize: Size(960, 600),
+      center: true,
+      title: 'MindPost',
+    );
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
+
   runApp(const MindPostApp());
 }
 
@@ -36,7 +53,8 @@ class MindPostApp extends StatelessWidget {
           filled: true,
           fillColor: const Color(0xFFF8FAFC),
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(6),
             borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -57,7 +75,8 @@ class MindPostApp extends StatelessWidget {
           unselectedLabelColor: Color(0xFF64748B),
           indicatorSize: TabBarIndicatorSize.label,
           labelStyle: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: TextStyle(fontSize: 12.5, fontWeight: FontWeight.normal),
+          unselectedLabelStyle:
+              TextStyle(fontSize: 12.5, fontWeight: FontWeight.normal),
         ),
         tooltipTheme: TooltipThemeData(
           decoration: BoxDecoration(

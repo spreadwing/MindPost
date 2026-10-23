@@ -109,6 +109,7 @@ class Workspace {
   // 软件设置项
   bool doubleClickToCloseTab;
   bool showUrlPreviewBar;
+  bool minimizeToTrayOnClose; // 关闭应用窗口时最小化到系统托盘
   String sidebarTheme; // 'slate' | 'ice' | 'dark' | 'warm' | 'gradient'
   int historyLimit; // 历史列表最大显示条数，默认 10
   List<ApiHistoryItem> apiHistory;
@@ -130,6 +131,7 @@ class Workspace {
     List<VariableItem>? globalVariables,
     this.doubleClickToCloseTab = true,
     this.showUrlPreviewBar = true,
+    this.minimizeToTrayOnClose = true,
     this.sidebarTheme = 'slate',
     this.historyLimit = 10,
     List<ApiHistoryItem>? apiHistory,
@@ -218,6 +220,7 @@ class Workspace {
         'globalVariables': globalVariables.map((v) => v.toJson()).toList(),
         'doubleClickToCloseTab': doubleClickToCloseTab,
         'showUrlPreviewBar': showUrlPreviewBar,
+        'minimizeToTrayOnClose': minimizeToTrayOnClose,
         'sidebarTheme': sidebarTheme,
         'historyLimit': historyLimit,
         'apiHistory': apiHistory.map((h) => h.toJson()).toList(),
@@ -262,6 +265,7 @@ class Workspace {
           [],
       doubleClickToCloseTab: json['doubleClickToCloseTab'] as bool? ?? true,
       showUrlPreviewBar: json['showUrlPreviewBar'] as bool? ?? true,
+      minimizeToTrayOnClose: json['minimizeToTrayOnClose'] as bool? ?? true,
       sidebarTheme: (json['sidebarTheme'] as String?)?.trim().isNotEmpty == true
           ? json['sidebarTheme'] as String
           : 'slate',
