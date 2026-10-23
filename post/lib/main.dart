@@ -86,6 +86,16 @@ class MindPostApp extends StatelessWidget {
           textStyle: const TextStyle(color: Colors.white, fontSize: 11),
           waitDuration: const Duration(milliseconds: 400),
         ),
+        popupMenuTheme: PopupMenuThemeData(
+          color: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          elevation: 4,
+          shadowColor: const Color(0xFF0F172A).withValues(alpha: 0.10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: const BorderSide(color: Color(0xFFE2E8F0), width: 1.0),
+          ),
+        ),
         fontFamily: AppFonts.uiFamily,
         fontFamilyFallback: AppFonts.uiFallback,
       ),

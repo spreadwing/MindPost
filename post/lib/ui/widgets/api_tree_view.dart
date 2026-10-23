@@ -6,6 +6,7 @@ import '../../models/api_folder.dart';
 import '../../models/api_request.dart';
 import 'status_badge.dart';
 import 'browser_import_dialog.dart';
+import '../folder_theme_config.dart';
 
 /// 侧边栏配色方案配置
 class SidebarPalette {
@@ -239,6 +240,7 @@ class ApiTreeView extends StatefulWidget {
   final void Function(dynamic container, bool isCollection)? onContainerSelected;
   final VoidCallback onWorkspaceChanged;
   final VoidCallback? onAddNewCollection;
+  final FolderThemeConfig? folderThemeConfig;
 
   const ApiTreeView({
     super.key,
@@ -249,6 +251,7 @@ class ApiTreeView extends StatefulWidget {
     this.onContainerSelected,
     required this.onWorkspaceChanged,
     this.onAddNewCollection,
+    this.folderThemeConfig,
   });
 
   @override
@@ -256,6 +259,17 @@ class ApiTreeView extends StatefulWidget {
 }
 
 class ApiTreeViewState extends State<ApiTreeView> {
+  // 解析当前有效的文件夹主题配置
+  FolderThemeConfig get _folderTheme {
+    if (widget.folderThemeConfig != null) return widget.folderThemeConfig!;
+    final ext = Theme.of(context).extension<FolderThemeConfig>();
+    if (ext != null) return ext;
+    return FolderThemeConfig(
+      colorPreset: FolderColorPreset.fromId(widget.workspace.folderColorTheme),
+      iconStyle: FolderIconStyle.fromId(widget.workspace.folderIconStyle),
+    );
+  }
+
   // 记录所有展开的容器 ID
   final Set<String> _expandedIds = {};
 
@@ -968,7 +982,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
           borderRadius: BorderRadius.circular(5),
           child: Padding(
             padding: EdgeInsets.only(
-                left: 5.0 + depth * 13.0, right: 5, top: 3.0, bottom: 3.0),
+                left: 6.0 + depth * 13.0, right: 6, top: 5.0, bottom: 5.0),
             child: Row(
               children: [
                 if (isSelected)
@@ -992,13 +1006,11 @@ class ApiTreeViewState extends State<ApiTreeView> {
                     color: palette.mutedIconColor,
                   ),
                 ),
-                const SizedBox(width: 2),
-                Icon(
-                  isExpanded
-                      ? Icons.folder_open_rounded
-                      : Icons.folder_rounded,
+                const SizedBox(width: 3),
+                FolderThemeIcon(
+                  isExpanded: isExpanded,
                   size: 15,
-                  color: const Color(0xFFF59E0B),
+                  config: _folderTheme,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -1017,16 +1029,16 @@ class ApiTreeViewState extends State<ApiTreeView> {
                 ),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                   decoration: BoxDecoration(
-                    color: palette.badgeBackgroundColor,
+                    color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     '$totalChildCount',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 10,
-                      color: palette.badgeTextColor,
+                      color: Color(0xFF64748B),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1082,12 +1094,17 @@ class ApiTreeViewState extends State<ApiTreeView> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFFF59E0B)),
+                border: Border.all(
+                    color: _folderTheme.colorPreset.resolveColor(context)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.folder, size: 16, color: Color(0xFFF59E0B)),
+                  FolderThemeIcon(
+                    isExpanded: isExpanded,
+                    size: 16,
+                    config: _folderTheme,
+                  ),
                   const SizedBox(width: 6),
                   Text(folder.name,
                       style: const TextStyle(
@@ -1145,7 +1162,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
           onTap: () => widget.onRequestSelected(req),
           child: Padding(
             padding: EdgeInsets.only(
-                left: 6.0 + depth * 13.0, right: 5, top: 3.0, bottom: 3.0),
+                left: 6.0 + depth * 13.0, right: 6, top: 5.0, bottom: 5.0),
             child: Row(
               children: [
                 if (isSelected)
@@ -1479,7 +1496,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
                       onTap: () => _handleContainerTap(col, true),
                       child: Padding(
                         padding: const EdgeInsets.only(
-                            left: 5, right: 5, top: 3.5, bottom: 3.5),
+                            left: 6, right: 6, top: 5.5, bottom: 5.5),
                         child: Row(
                           children: [
                             if (isSelected)
@@ -1531,16 +1548,16 @@ class ApiTreeViewState extends State<ApiTreeView> {
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 1),
+                                  horizontal: 5, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: palette.badgeBackgroundColor,
+                                color: const Color(0xFFF1F5F9),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 '$totalChildCount',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 10,
-                                  color: palette.badgeTextColor,
+                                  color: Color(0xFF64748B),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -1598,13 +1615,13 @@ class ApiTreeViewState extends State<ApiTreeView> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFF59E0B)),
+                            border: Border.all(color: const Color(0xFFD97706)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.folder,
-                                  size: 16, color: Color(0xFFF59E0B)),
+                              const Icon(Icons.inventory_2_rounded,
+                                  size: 16, color: Color(0xFFD97706)),
                               const SizedBox(width: 6),
                               Text(col.name,
                                   style: const TextStyle(

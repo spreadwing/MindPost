@@ -111,6 +111,8 @@ class Workspace {
   bool showUrlPreviewBar;
   bool minimizeToTrayOnClose; // 关闭应用窗口时最小化到系统托盘
   String sidebarTheme; // 'slate' | 'ice' | 'dark' | 'warm' | 'gradient'
+  String folderColorTheme; // 'blue' | 'amber' | 'slate' | 'emerald' | 'purple' | 'system'
+  String folderIconStyle; // 'duotone' | 'outlined' | 'filled'
   int historyLimit; // 历史列表最大显示条数，默认 10
   List<ApiHistoryItem> apiHistory;
   List<String> rightSidebarTools; // 右侧边栏启用的工具 ID 列表
@@ -133,6 +135,8 @@ class Workspace {
     this.showUrlPreviewBar = true,
     this.minimizeToTrayOnClose = true,
     this.sidebarTheme = 'slate',
+    this.folderColorTheme = 'blue',
+    this.folderIconStyle = 'duotone',
     this.historyLimit = 10,
     List<ApiHistoryItem>? apiHistory,
     List<String>? rightSidebarTools,
@@ -222,6 +226,8 @@ class Workspace {
         'showUrlPreviewBar': showUrlPreviewBar,
         'minimizeToTrayOnClose': minimizeToTrayOnClose,
         'sidebarTheme': sidebarTheme,
+        'folderColorTheme': folderColorTheme,
+        'folderIconStyle': folderIconStyle,
         'historyLimit': historyLimit,
         'apiHistory': apiHistory.map((h) => h.toJson()).toList(),
         'rightSidebarTools': rightSidebarTools,
@@ -269,6 +275,14 @@ class Workspace {
       sidebarTheme: (json['sidebarTheme'] as String?)?.trim().isNotEmpty == true
           ? json['sidebarTheme'] as String
           : 'slate',
+      folderColorTheme:
+          (json['folderColorTheme'] as String?)?.trim().isNotEmpty == true
+              ? json['folderColorTheme'] as String
+              : 'blue',
+      folderIconStyle:
+          (json['folderIconStyle'] as String?)?.trim().isNotEmpty == true
+              ? json['folderIconStyle'] as String
+              : 'duotone',
       historyLimit: parsedLimit.clamp(1, 200),
       apiHistory: dedupedHistory,
       rightSidebarTools: (json['rightSidebarTools'] as List<dynamic>?)

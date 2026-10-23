@@ -23,6 +23,8 @@ import 'widgets/api_tree_view.dart';
 import 'widgets/container_settings_view.dart';
 import 'widgets/json_syntax_highlighter.dart';
 import 'widgets/help_dialog.dart';
+import 'widgets/modern_dropdown.dart';
+import 'folder_theme_config.dart';
 import 'app_fonts.dart';
 import '../services/tray_window_service.dart';
 
@@ -928,14 +930,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
           const Spacer(),
 
-          // 顶栏快速切换枚举变量区域（下拉显示枚举名称）
-          if (headerEnumVars.isNotEmpty) ...[
-            Flexible(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: headerEnumVars.map((v) {
+          // 顶部环境选择器聚合底座容器（无阴影纯平设计）
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 顶栏快速切换枚举变量区域
+                if (headerEnumVars.isNotEmpty)
+                  ...headerEnumVars.map((v) {
                     final Map<String, EnumOption> optMap = {};
                     for (final o in v.enumOptions) {
                       if (o.value.trim().isNotEmpty &&
@@ -956,190 +964,201 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         options.any((o) => o.value == v.value)
                             ? v.value
                             : options.first.value;
+                    final currentOpt = options.firstWhere(
+                      (o) => o.value == currentVal,
+                      orElse: () => options.first,
+                    );
 
-                    return Container(
-                      height: 32,
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                        borderRadius: BorderRadius.circular(7),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
-                            blurRadius: 3,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              v.key,
-                              style: AppFonts.code(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF2563EB),
+                    return ModernDropdown<String>(
+                      value: currentVal,
+                      menuWidth: 160,
+                      tooltip: '切换 ${v.key} 枚举变量',
+                      items: options.map((opt) {
+                        return ModernDropdownItem<String>(
+                          value: opt.value,
+                          label: opt.displayLabel,
+                        );
+                      }).toList(),
+                      onChanged: (newVal) {
+                        setState(() {
+                          v.value = newVal;
+                        });
+                        _mcpServerService.updateWorkspace(_workspace);
+                        _storageService.saveWorkspace(_workspace);
+                      },
+                      child: Container(
+                        height: 28,
+                        margin: const EdgeInsets.only(right: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                              color: const Color(0xFFE2E8F0), width: 0.8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                v.key,
+                                style: AppFonts.code(
+                                  fontSize: 10.0,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF2563EB),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 200),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: currentVal,
-                                isDense: true,
-                                icon: const Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    size: 15,
-                                    color: Color(0xFF64748B)),
+                            const SizedBox(width: 6),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 160),
+                              child: Text(
+                                currentOpt.displayLabel,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11.5,
                                   color: Color(0xFF0F172A),
                                   fontWeight: FontWeight.w600,
                                 ),
-                                items: options
-                                    .map((opt) => DropdownMenuItem<String>(
-                                          value: opt.value,
-                                          child: Text(
-                                            opt.displayLabel,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ))
-                                    .toList(),
-                                onChanged: (newVal) {
-                                  if (newVal != null) {
-                                    setState(() {
-                                      v.value = newVal;
-                                    });
-                                    _mcpServerService
-                                        .updateWorkspace(_workspace);
-                                    _storageService.saveWorkspace(_workspace);
-                                  }
-                                },
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 3),
+                            const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 14,
+                              color: Color(0xFF64748B),
+                            ),
+                          ],
+                        ),
                       ),
                     );
-                  }).toList(),
-                ),
-              ),
-            ),
-          ],
+                  }),
 
-          // 环境切换下拉框（仅显示环境名，统一样式与间距）
-          Container(
-            height: 32,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-              borderRadius: BorderRadius.circular(7),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 3,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                if (activeEnv != null)
-                  Container(
-                    width: 7,
-                    height: 7,
-                    margin: const EdgeInsets.only(right: 6),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF10B981),
-                      shape: BoxShape.circle,
+                // 现代环境切换下拉框（优雅下挂浮层、消除粗重原生灰块选中态）
+                ModernDropdown<String?>(
+                  value: _workspace.activeEnvironmentId,
+                  menuWidth: 160,
+                  tooltip: '切换当前运行环境',
+                  items: [
+                    const ModernDropdownItem<String?>(
+                      value: null,
+                      label: '无环境',
+                      icon: Icon(Icons.public_off_rounded,
+                          size: 14, color: Color(0xFF94A3B8)),
                     ),
-                  )
-                else
-                  const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: Icon(Icons.public_rounded, size: 14, color: Color(0xFF94A3B8)),
+                    ..._workspace.environments.map((e) {
+                      return ModernDropdownItem<String?>(
+                        value: e.id,
+                        label: e.name,
+                        icon: Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                  onChanged: (val) {
+                    setState(() {
+                      _workspace.activeEnvironmentId = val;
+                    });
+                    _mcpServerService.updateWorkspace(_workspace);
+                    _storageService.saveWorkspace(_workspace);
+                  },
+                  child: Container(
+                    height: 28,
+                    margin: const EdgeInsets.only(right: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                          color: const Color(0xFFE2E8F0), width: 0.8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (activeEnv != null)
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsets.only(right: 5),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                            ),
+                          )
+                        else
+                          const Padding(
+                            padding: EdgeInsets.only(right: 4),
+                            child: Icon(Icons.public_rounded,
+                                size: 13, color: Color(0xFF94A3B8)),
+                          ),
+                        Text(
+                          activeEnv?.name ?? '无环境',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: activeEnv != null
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                            color: activeEnv != null
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFF64748B),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 15,
+                          color: Color(0xFF64748B),
+                        ),
+                      ],
+                    ),
                   ),
-                DropdownButtonHideUnderline(
-                  child: DropdownButton<String?>(
-                    value: _workspace.activeEnvironmentId,
-                    hint: const Text('无环境',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                        size: 16, color: Color(0xFF64748B)),
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
-                    items: [
-                      const DropdownMenuItem<String?>(
-                        value: null,
-                        child: Text('无环境',
-                            style: TextStyle(fontSize: 12)),
-                      ),
-                      ..._workspace.environments.map((e) {
-                        return DropdownMenuItem<String?>(
-                          value: e.id,
-                          child: Text(e.name,
-                              style: const TextStyle(fontSize: 12)),
-                        );
-                      }),
-                    ],
-                    onChanged: (val) {
-                      setState(() {
-                        _workspace.activeEnvironmentId = val;
-                      });
-                      _mcpServerService.updateWorkspace(_workspace);
-                      _storageService.saveWorkspace(_workspace);
+                ),
+
+                // 环境管理弹窗按钮（白色背景、6.0 圆角）
+                Tooltip(
+                  message: '管理环境变量',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(6),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => EnvironmentDialog(
+                          workspace: _workspace,
+                          onSaved: () {
+                            setState(() {});
+                            _mcpServerService.updateWorkspace(_workspace);
+                            _storageService.saveWorkspace(_workspace);
+                          },
+                        ),
+                      );
                     },
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                            color: const Color(0xFFE2E8F0), width: 0.8),
+                      ),
+                      child: const Icon(Icons.tune_rounded,
+                          size: 14, color: Color(0xFF475569)),
+                    ),
                   ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // 环境管理弹窗按钮（统一高度圆角与精致悬浮反馈）
-          Tooltip(
-            message: '管理环境变量',
-            child: InkWell(
-              borderRadius: BorderRadius.circular(7),
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => EnvironmentDialog(
-                    workspace: _workspace,
-                    onSaved: () {
-                      setState(() {});
-                      _mcpServerService.updateWorkspace(_workspace);
-                      _storageService.saveWorkspace(_workspace);
-                    },
-                  ),
-                );
-              },
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: const Icon(Icons.tune_rounded, size: 16, color: Color(0xFF475569)),
-              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -1858,6 +1877,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         const SizedBox(height: 22),
         const Text(
+          '目录树文件夹外观',
+          style: TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          '自定义左侧目录树中文件夹的强调配色与图标视觉形态，切换后实时响应生效',
+          style: TextStyle(
+            fontSize: 12,
+            color: Color(0xFF64748B),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildFolderAppearanceSettingsCard(setModalState),
+        const SizedBox(height: 22),
+        const Text(
           '工作区视图与系统交互',
           style: TextStyle(
             fontSize: 13.5,
@@ -1897,6 +1935,212 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  /// 目录树文件夹外观配置卡片（双色调/线性/实心 + 6种预设配色圆形色卡）
+  Widget _buildFolderAppearanceSettingsCard(StateSetter setModalState) {
+    final currentColorId = _workspace.folderColorTheme;
+    final currentStyleId = _workspace.folderIconStyle;
+    final currentIconStyle = FolderIconStyle.fromId(currentStyleId);
+    final currentConfig = FolderThemeConfig(
+      colorPreset: FolderColorPreset.fromId(currentColorId),
+      iconStyle: currentIconStyle,
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 第一行：图标形态切换 (SegmentedButton) 与即时视觉效果展示
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                '图标形态',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF334155),
+                ),
+              ),
+              const SizedBox(width: 14),
+              SegmentedButton<FolderIconStyle>(
+                segments: FolderIconStyle.values.map((style) {
+                  return ButtonSegment<FolderIconStyle>(
+                    value: style,
+                    label: Text(style.label,
+                        style: const TextStyle(fontSize: 11.5)),
+                    icon: Icon(style.icon, size: 15),
+                  );
+                }).toList(),
+                selected: {currentIconStyle},
+                onSelectionChanged: (newSelection) {
+                  final newStyle = newSelection.first;
+                  setModalState(() {
+                    _workspace.folderIconStyle = newStyle.id;
+                  });
+                  setState(() {});
+                  _storageService.saveWorkspace(_workspace);
+                },
+                style: ButtonStyle(
+                  visualDensity: VisualDensity.compact,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  elevation: WidgetStateProperty.all(0),
+                  backgroundColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return Colors.white;
+                    }
+                    return const Color(0xFFF1F5F9);
+                  }),
+                  foregroundColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return const Color(0xFF2563EB);
+                    }
+                    return const Color(0xFF475569);
+                  }),
+                  side: WidgetStateProperty.all(
+                    const BorderSide(color: Color(0xFFE2E8F0), width: 1.0),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              // 即时动态效果展示
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  border:
+                      Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FolderThemeIcon(
+                      isExpanded: false,
+                      size: 15,
+                      config: currentConfig,
+                    ),
+                    const SizedBox(width: 6),
+                    FolderThemeIcon(
+                      isExpanded: true,
+                      size: 15,
+                      config: currentConfig,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '效果预览',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(height: 1, color: Color(0xFFE2E8F0)),
+          const SizedBox(height: 14),
+
+          // 第二行：预设配色方案圆形色卡选择器
+          const Text(
+            '预设配色方案',
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF334155),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: FolderColorPreset.presets.map((preset) {
+              final isSelected = preset.id == currentColorId;
+              final color = preset.resolveColor(context);
+
+              return Tooltip(
+                message: preset.name,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () {
+                    setModalState(() {
+                      _workspace.folderColorTheme = preset.id;
+                    });
+                    setState(() {});
+                    _storageService.saveWorkspace(_workspace);
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFF2563EB)
+                            : Colors.transparent,
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 圆形色卡
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: color,
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFFCBD5E1),
+                              width: isSelected ? 2.0 : 0.8,
+                            ),
+                          ),
+                          child: isSelected
+                              ? const Icon(
+                                  Icons.check_rounded,
+                                  size: 13,
+                                  color: Colors.white,
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          preset.name,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                            color: isSelected
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFF475569),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// 单个侧边栏主题的微缩可视化预览卡片
   Widget _buildSidebarThemePreviewCard({
     required SidebarPalette palette,
@@ -1917,17 +2161,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             color: isSelected
                 ? const Color(0xFF2563EB)
                 : const Color(0xFFE2E8F0),
-            width: isSelected ? 1.8 : 1.0,
+            width: isSelected ? 1.5 : 1.0,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF2563EB).withValues(alpha: 0.10),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -3223,11 +3458,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   const BoxConstraints(minWidth: 24, minHeight: 24),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(5),
-                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.0),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(5),
-                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.0),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(5),
@@ -3450,15 +3685,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         : const Color(0xFFBFDBFE))
                     : Colors.transparent,
               ),
-              boxShadow: isSelected && !palette.isDark
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFF2563EB).withValues(alpha: 0.08),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
+
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -4611,51 +4838,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               Row(
                 children: [
-                  // 核心 URL 操作输入框区域（带突出高光与立体阴影）
+                  // 核心 URL 操作输入框区域（纯平柔和边框，无阴影）
                   Expanded(
                     child: Container(
                       height: 40,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.1),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-                            blurRadius: 6,
-                            offset: const Offset(0, 1.5),
-                          ),
-                          BoxShadow(
-                            color: const Color(0xFF2563EB).withValues(alpha: 0.03),
-                            blurRadius: 1,
-                            offset: const Offset(0, 0),
-                          ),
-                        ],
+                        border: Border.all(
+                            color: const Color(0xFFE2E8F0), width: 1.0),
                       ),
                       child: Row(
                         children: [
-                          // HTTP Method 下拉
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<HttpMethod>(
-                                value: req.method,
-                                icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                                    size: 16, color: Color(0xFF64748B)),
-                                items: HttpMethod.values.map((m) {
-                                  return DropdownMenuItem(
-                                    value: m,
-                                    child: HttpMethodBadge(method: m),
-                                  );
-                                }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) {
-                                    setState(() {
-                                      req.method = val;
-                                    });
-                                    _markCurrentTabDirty();
-                                  }
-                                },
+                          // HTTP Method 现代下拉选择器
+                          ModernDropdown<HttpMethod>(
+                            value: req.method,
+                            menuWidth: 120,
+                            tooltip: '切换 HTTP 请求方法',
+                            items: HttpMethod.values.map((m) {
+                              return ModernDropdownItem<HttpMethod>(
+                                value: m,
+                                label: m.name.toUpperCase(),
+                                customContent: HttpMethodBadge(method: m),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              setState(() {
+                                req.method = val;
+                              });
+                              _markCurrentTabDirty();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  HttpMethodBadge(method: req.method),
+                                  const SizedBox(width: 4),
+                                  const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 16,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -4712,19 +4938,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           height: 40,
                           padding: const EdgeInsets.symmetric(horizontal: 13),
                           decoration: BoxDecoration(
-                            color: isCurrentDirty ? const Color(0xFFFFFBEB) : Colors.white,
+                            color: isCurrentDirty
+                                ? const Color(0xFFFFFBEB)
+                                : const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isCurrentDirty ? const Color(0xFFFBBF24) : const Color(0xFFCBD5E1),
-                              width: 1.1,
+                              color: isCurrentDirty
+                                  ? const Color(0xFFFBBF24)
+                                  : const Color(0xFFE2E8F0),
+                              width: 1.0,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -4734,7 +4957,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 size: 15,
                                 color: isCurrentDirty
                                     ? const Color(0xFFD97706)
-                                    : const Color(0xFF64748B),
+                                    : const Color(0xFF475569),
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -4879,15 +5102,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
 
-        // 4.3 请求参数与前置脚本配置子标签 (现代化 Segmented Pill 胶囊分段控制器)
+        // 4.3 请求参数与前置脚本配置子标签 (纯平纯粹底座 + 2px 蓝色下划线指示器)
         Container(
           height: 38,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: const BoxDecoration(
-            color: Color(0xFFF1F5F9), // 优雅通透的底槽
+            color: Color(0xFFF8FAFC),
             border: Border(
-              top: BorderSide(color: Color(0xFFE2E8F0)),
-              bottom: BorderSide(color: Color(0xFFE2E8F0)),
+              bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1.0),
             ),
           ),
           child: TabBar(
@@ -4898,22 +5120,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             overlayColor: WidgetStateProperty.all(Colors.transparent),
             labelColor: const Color(0xFF2563EB),
             unselectedLabelColor: const Color(0xFF64748B),
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicatorPadding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-            indicator: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: const Color(0xFFBFDBFE), width: 1.1),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.08),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1.5),
-                ),
-              ],
+            indicatorSize: TabBarIndicatorSize.label,
+            indicator: const UnderlineTabIndicator(
+              borderSide: BorderSide(color: Color(0xFF2563EB), width: 2.0),
+              insets: EdgeInsets.symmetric(horizontal: -2),
             ),
             labelStyle:
-                const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             unselectedLabelStyle:
                 const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             tabs: [
@@ -4985,8 +5198,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       if (req.bodyType != BodyType.none) ...[
                         const SizedBox(width: 5),
                         Container(
-                          width: 6,
-                          height: 6,
+                          width: 5,
+                          height: 5,
                           decoration: const BoxDecoration(
                             color: Color(0xFF2563EB),
                             shape: BoxShape.circle,
@@ -5007,8 +5220,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       if (req.preRequestScript.trim().isNotEmpty) ...[
                         const SizedBox(width: 5),
                         Container(
-                          width: 6,
-                          height: 6,
+                          width: 5,
+                          height: 5,
                           decoration: const BoxDecoration(
                             color: Color(0xFF10B981),
                             shape: BoxShape.circle,
@@ -5029,8 +5242,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       if (req.postRequestScript.trim().isNotEmpty) ...[
                         const SizedBox(width: 5),
                         Container(
-                          width: 6,
-                          height: 6,
+                          width: 5,
+                          height: 5,
                           decoration: const BoxDecoration(
                             color: Color(0xFF10B981),
                             shape: BoxShape.circle,
@@ -5167,53 +5380,61 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     if (req.bodyType == BodyType.json ||
                                         req.bodyType == BodyType.raw) ...[
                                       const SizedBox(width: 8),
-                                      Container(
-                                        height: 28,
-                                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(color: const Color(0xFFCBD5E1)),
-                                        ),
-                                        child: DropdownButtonHideUnderline(
-                                          child: DropdownButton<String>(
-                                            value: const [
-                                              'json',
-                                              'text',
-                                              'xml',
-                                              'html',
-                                              'javascript'
-                                            ].contains(req.rawFormat.toLowerCase())
-                                                ? req.rawFormat.toLowerCase()
-                                                : 'json',
-                                            isDense: true,
-                                            icon: const Icon(
+                                      ModernDropdown<String>(
+                                        value: const [
+                                          'json',
+                                          'text',
+                                          'xml',
+                                          'html',
+                                          'javascript'
+                                        ].contains(req.rawFormat.toLowerCase())
+                                            ? req.rawFormat.toLowerCase()
+                                            : 'json',
+                                        menuWidth: 120,
+                                        tooltip: '切换请求体格式',
+                                        items: const [
+                                          ModernDropdownItem(value: 'json', label: 'JSON'),
+                                          ModernDropdownItem(value: 'text', label: 'Text'),
+                                          ModernDropdownItem(value: 'xml', label: 'XML'),
+                                          ModernDropdownItem(value: 'html', label: 'HTML'),
+                                          ModernDropdownItem(value: 'javascript', label: 'JavaScript'),
+                                        ],
+                                        onChanged: (val) {
+                                          setState(() {
+                                            req.rawFormat = val;
+                                            req.bodyType = val == 'json'
+                                                ? BodyType.json
+                                                : BodyType.raw;
+                                          });
+                                          _markCurrentTabDirty();
+                                        },
+                                        child: Container(
+                                          height: 28,
+                                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                                color: const Color(0xFFE2E8F0), width: 1.0),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                req.rawFormat.toUpperCase(),
+                                                style: const TextStyle(
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF2563EB),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 3),
+                                              const Icon(
                                                 Icons.keyboard_arrow_down_rounded,
                                                 size: 15,
-                                                color: Color(0xFF2563EB)),
-                                            style: const TextStyle(
-                                              fontSize: 11.5,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFF2563EB),
-                                            ),
-                                            items: const [
-                                              DropdownMenuItem(value: 'json', child: Text('JSON')),
-                                              DropdownMenuItem(value: 'text', child: Text('Text')),
-                                              DropdownMenuItem(value: 'xml', child: Text('XML')),
-                                              DropdownMenuItem(value: 'html', child: Text('HTML')),
-                                              DropdownMenuItem(value: 'javascript', child: Text('JavaScript')),
+                                                color: Color(0xFF2563EB),
+                                              ),
                                             ],
-                                            onChanged: (val) {
-                                              if (val != null) {
-                                                setState(() {
-                                                  req.rawFormat = val;
-                                                  req.bodyType = val == 'json'
-                                                      ? BodyType.json
-                                                      : BodyType.raw;
-                                                });
-                                                _markCurrentTabDirty();
-                                              }
-                                            },
                                           ),
                                         ),
                                       ),
@@ -5357,21 +5578,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     decoration: BoxDecoration(
                                       color: _editorDarkMode
                                           ? const Color(0xFF0F172A)
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(7),
+                                          : const Color(0xFFF8FAFC),
+                                      borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
                                         color: _editorDarkMode
                                             ? const Color(0xFF334155)
-                                            : const Color(0xFFCBD5E1),
-                                        width: 1.1,
+                                            : const Color(0xFFE2E8F0),
+                                        width: 1.0,
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.03),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 1),
-                                        ),
-                                      ],
                                     ),
                                     child: TextFormField(
                                       controller: _bodyController,
@@ -5456,21 +5670,14 @@ console.log("签名计算完成: " + sign);
                                   decoration: BoxDecoration(
                                     color: _editorDarkMode
                                         ? const Color(0xFF0F172A)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(7),
+                                        : const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: _editorDarkMode
                                           ? const Color(0xFF334155)
-                                          : const Color(0xFFCBD5E1),
-                                      width: 1.1,
+                                          : const Color(0xFFE2E8F0),
+                                      width: 1.0,
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.03),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 1),
-                                      ),
-                                    ],
                                   ),
                                   child: TextFormField(
                                     controller: _preScriptController,
@@ -5553,21 +5760,14 @@ pm.test("Status code is 200", function () {
                                   decoration: BoxDecoration(
                                     color: _editorDarkMode
                                         ? const Color(0xFF0F172A)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(7),
+                                        : const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: _editorDarkMode
                                           ? const Color(0xFF334155)
-                                          : const Color(0xFFCBD5E1),
-                                      width: 1.1,
+                                          : const Color(0xFFE2E8F0),
+                                      width: 1.0,
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.03),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 1),
-                                      ),
-                                    ],
                                   ),
                                   child: TextFormField(
                                     controller: _postScriptController,
@@ -5631,15 +5831,18 @@ pm.test("Status code is 200", function () {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.all(12),
+                                      width: 40,
+                                      height: 40,
+                                      alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFEFF6FF),
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                            color: const Color(0xFFDBEAFE)),
+                                            color: const Color(0xFFDBEAFE),
+                                            width: 1.0),
                                       ),
                                       child: const Icon(Icons.bolt_rounded,
-                                          size: 28, color: Color(0xFF2563EB)),
+                                          size: 20, color: Color(0xFF2563EB)),
                                     ),
                                     const SizedBox(height: 10),
                                     const Text(
@@ -6202,7 +6405,8 @@ pm.test("Status code is 200", function () {
                                                         borderSide:
                                                             const BorderSide(
                                                                 color: Color(
-                                                                    0xFFCBD5E1)),
+                                                                    0xFFE2E8F0),
+                                                                width: 1.0),
                                                       ),
                                                       enabledBorder:
                                                           OutlineInputBorder(
@@ -6212,7 +6416,8 @@ pm.test("Status code is 200", function () {
                                                         borderSide:
                                                             const BorderSide(
                                                                 color: Color(
-                                                                    0xFFCBD5E1)),
+                                                                    0xFFE2E8F0),
+                                                                width: 1.0),
                                                       ),
                                                       focusedBorder:
                                                           OutlineInputBorder(
@@ -6720,15 +6925,9 @@ pm.test("Status code is 200", function () {
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(5),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 3,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
+          border: isSelected
+              ? Border.all(color: const Color(0xFFE2E8F0), width: 1.0)
+              : Border.all(color: Colors.transparent, width: 1.0),
         ),
         child: Text(
           label,
