@@ -6,6 +6,7 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:uuid/uuid.dart';
 import '../models/workspace.dart';
+import '../models/api_folder.dart';
 import '../models/api_request.dart';
 import '../models/environment.dart';
 import 'http_client_service.dart';
@@ -327,6 +328,58 @@ class McpServerService {
           },
         },
       },
+      {
+        'name': 'upsert_api_request',
+        'description':
+            '向 MindPost 工作区中新增或更新一个 API 请求。支持指定目标集合及多级文件夹路径（如 "dqs/simReport"），若文件夹不存在将自动创建，修改将即时生效并持久化到本地。',
+        'inputSchema': {
+          'type': 'object',
+          'properties': {
+            'collection_id': {
+              'type': 'string',
+              'description': '目标集合 ID（可选，不传默认使用第一个集合）',
+            },
+            'folder_path': {
+              'type': 'string',
+              'description': '文件夹路径，例如 "dqs/simReport" 或 "auth"',
+            },
+            'name': {
+              'type': 'string',
+              'description': '请求名称',
+            },
+            'method': {
+              'type': 'string',
+              'enum': ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
+              'description': 'HTTP 请求方法',
+            },
+            'url': {
+              'type': 'string',
+              'description': '请求 URL',
+            },
+            'headers': {
+              'type': 'object',
+              'description': 'Headers 键值对 Map',
+            },
+            'params': {
+              'type': 'object',
+              'description': 'Query 参数键值对 Map',
+            },
+            'body': {
+              'type': 'string',
+              'description': '请求体内容（字符串格式，如 JSON）',
+            },
+            'description': {
+              'type': 'string',
+              'description': '接口功能描述与注释',
+            },
+            'post_request_script': {
+              'type': 'string',
+              'description': '后置断言/提取脚本',
+            },
+          },
+          'required': ['name', 'method', 'url'],
+        },
+      },
     ];
   }
 
@@ -529,6 +582,94 @@ class McpServerService {
                   'status': l.status,
                   'summary': l.resultSummary,
                 }).toList(),
+          };
+          break;
+
+        case 'upsert_api_request':
+          if (workspace.collections.isEmpty) {
+            result = {'success': false, 'error': '工作区中不存在任何集合'};
+            break;
+          }
+          final colId = arguments['collection_id'] as String?;
+          final targetCol = (colId != null && colId.isNotEmpty)
+              ? workspace.collections.firstWhere((c) => c.id == colId, orElse: () => workspace.collections.first)
+              : workspace.collections.first;
+
+          final folderPath = arguments['folder_path'] as String? ?? '';
+          final reqName = arguments['name'] as String? ?? '未命名请求';
+          final methodStr = arguments['method'] as String? ?? 'GET';
+          final urlStr = arguments['url'] as String? ?? '';
+          final descStr = arguments['description'] as String? ?? '';
+          final postScript = arguments['post_request_script'] as String? ?? '';
+          final bodyStr = arguments['body'] as String? ?? '';
+
+          // 递归查找或创建目标目录
+          List<ApiRequest> targetRequestList = targetCol.requests;
+          if (folderPath.trim().isNotEmpty) {
+            final segments = folderPath.split('/').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+            List<ApiFolder> currentFolders = targetCol.folders;
+            ApiFolder? currentFolder;
+            for (final seg in segments) {
+              final existing = currentFolders.where((f) => f.name == seg).firstOrNull;
+              if (existing != null) {
+                currentFolder = existing;
+              } else {
+                final newFolder = ApiFolder(name: seg);
+                currentFolders.add(newFolder);
+                currentFolder = newFolder;
+              }
+              currentFolders = currentFolder.folders;
+            }
+            if (currentFolder != null) {
+              targetRequestList = currentFolder.requests;
+            }
+          }
+
+          // 查找是否已存在同名请求进行覆盖，否则新增
+          ApiRequest? targetApi = targetRequestList.where((r) => r.name == reqName).firstOrNull;
+          final isCreate = targetApi == null;
+          targetApi ??= ApiRequest(name: reqName, url: urlStr);
+
+          targetApi.name = reqName;
+          targetApi.url = urlStr;
+          targetApi.method = HttpMethodExt.fromString(methodStr);
+          targetApi.description = descStr;
+          if (postScript.isNotEmpty) {
+            targetApi.postRequestScript = postScript;
+          }
+
+          if (arguments['headers'] is Map) {
+            final hMap = arguments['headers'] as Map;
+            targetApi.headers = hMap.entries
+                .map((e) => KeyValueItem(key: e.key.toString(), value: e.value.toString()))
+                .toList();
+          }
+
+          if (arguments['params'] is Map) {
+            final pMap = arguments['params'] as Map;
+            targetApi.params = pMap.entries
+                .map((e) => KeyValueItem(key: e.key.toString(), value: e.value.toString()))
+                .toList();
+          }
+
+          if (bodyStr.isNotEmpty) {
+            targetApi.bodyType = BodyType.json;
+            targetApi.bodyContent = bodyStr;
+          }
+
+          if (isCreate) {
+            targetRequestList.add(targetApi);
+          }
+
+          onWorkspaceUpdated?.call(workspace);
+          result = {
+            'success': true,
+            'isCreated': isCreate,
+            'requestId': targetApi.id,
+            'name': targetApi.name,
+            'method': targetApi.method.nameString,
+            'url': targetApi.url,
+            'folderPath': folderPath,
           };
           break;
 
