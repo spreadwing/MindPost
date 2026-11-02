@@ -241,6 +241,8 @@ class ApiTreeView extends StatefulWidget {
   final VoidCallback onWorkspaceChanged;
   final VoidCallback? onAddNewCollection;
   final FolderThemeConfig? folderThemeConfig;
+  final Set<String>? initialExpandedIds;
+  final void Function(Set<String> expandedIds)? onExpandedChanged;
 
   const ApiTreeView({
     super.key,
@@ -252,6 +254,8 @@ class ApiTreeView extends StatefulWidget {
     required this.onWorkspaceChanged,
     this.onAddNewCollection,
     this.folderThemeConfig,
+    this.initialExpandedIds,
+    this.onExpandedChanged,
   });
 
   @override
@@ -288,7 +292,26 @@ class ApiTreeViewState extends State<ApiTreeView> {
   @override
   void initState() {
     super.initState();
-    _expandAll();
+    if (widget.initialExpandedIds != null) {
+      _expandedIds.addAll(widget.initialExpandedIds!);
+    } else {
+      _expandAll();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ApiTreeView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialExpandedIds != null &&
+        oldWidget.initialExpandedIds != widget.initialExpandedIds) {
+      _expandedIds.clear();
+      _expandedIds.addAll(widget.initialExpandedIds!);
+      setState(() {});
+    }
+  }
+
+  void _notifyExpandedChanged() {
+    widget.onExpandedChanged?.call(Set<String>.from(_expandedIds));
   }
 
   @override
@@ -303,6 +326,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
       _expandedIds.add(col.id);
       _expandFolderRecursive(col.folders);
     }
+    _notifyExpandedChanged();
   }
 
   void _expandFolderRecursive(List<ApiFolder> folders) {
@@ -320,6 +344,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
         _expandedIds.add(id);
       }
     });
+    _notifyExpandedChanged();
   }
 
   /// 处理目录节点点击：单击显示目录设置参数页，快速双击仅展开/折叠目录而不触发单击
@@ -380,6 +405,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
     }
 
     if (found) {
+      _notifyExpandedChanged();
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -570,6 +596,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
       );
       col.requests.add(newReq);
       _expandedIds.add(col.id);
+      _notifyExpandedChanged();
       widget.onWorkspaceChanged();
       widget.onRequestSelected(newReq);
     } else if (val == 'import_browser') {
@@ -583,6 +610,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
       if (importedReq != null && mounted) {
         col.requests.add(importedReq);
         _expandedIds.add(col.id);
+        _notifyExpandedChanged();
         widget.onWorkspaceChanged();
         widget.onRequestSelected(importedReq);
       }
@@ -593,6 +621,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
         onConfirmed: (name) {
           col.folders.add(ApiFolder(name: name));
           _expandedIds.add(col.id);
+          _notifyExpandedChanged();
           widget.onWorkspaceChanged();
         },
       );
@@ -707,6 +736,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
       );
       folder.requests.add(newReq);
       _expandedIds.add(folder.id);
+      _notifyExpandedChanged();
       widget.onWorkspaceChanged();
       widget.onRequestSelected(newReq);
     } else if (val == 'import_browser') {
@@ -719,6 +749,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
       if (importedReq != null && mounted) {
         folder.requests.add(importedReq);
         _expandedIds.add(folder.id);
+        _notifyExpandedChanged();
         widget.onWorkspaceChanged();
         widget.onRequestSelected(importedReq);
       }
@@ -729,6 +760,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
         onConfirmed: (name) {
           folder.folders.add(ApiFolder(name: name));
           _expandedIds.add(folder.id);
+          _notifyExpandedChanged();
           widget.onWorkspaceChanged();
         },
       );
@@ -926,6 +958,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
       _expandedIds.add(targetContainer.id);
     }
 
+    _notifyExpandedChanged();
     widget.onWorkspaceChanged();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1383,7 +1416,10 @@ class ApiTreeViewState extends State<ApiTreeView> {
                       message: '全部折叠',
                       child: InkWell(
                         borderRadius: BorderRadius.circular(4),
-                        onTap: () => setState(() => _expandedIds.clear()),
+                        onTap: () {
+                          setState(() => _expandedIds.clear());
+                          _notifyExpandedChanged();
+                        },
                         child: Padding(
                           padding: const EdgeInsets.all(3.0),
                           child: Icon(Icons.unfold_less_rounded,

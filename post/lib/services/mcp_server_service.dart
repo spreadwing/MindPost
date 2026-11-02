@@ -78,39 +78,59 @@ class McpServerService {
         final controller = StreamController<String>.broadcast();
         _sseSessions[sessionId] = controller;
 
-        final stream = controller.stream.map((msg) => 'data: $msg\n\n');
-
-        // 告知 Client 发送消息的目标 URL
+        // 发送标准 MCP 握手事件
         Timer.run(() {
-          controller.add(json.encode({
-            'event': 'endpoint',
-            'data': '/messages?sessionId=$sessionId',
-          }));
+          controller.add('event: endpoint\ndata: /messages?sessionId=$sessionId\n\n');
         });
 
         return Response.ok(
-          stream,
+          controller.stream,
           headers: {
             'content-type': 'text/event-stream',
             'cache-control': 'no-cache',
             'connection': 'keep-alive',
+            'access-control-allow-origin': '*',
           },
         );
       });
 
-      // 3. POST /messages: 处理 MCP 客户端请求
-      router.post('/messages', (Request request) async {
+      // 3. POST /sse: 支持直连 JSON-RPC / Streamable 端点
+      router.post('/sse', (Request request) async {
         final bodyStr = await request.readAsString();
         final jsonBody = json.decode(bodyStr);
         final responsePayload = await _handleJsonRpc(jsonBody);
 
         return Response.ok(
           json.encode(responsePayload),
-          headers: {'content-type': 'application/json; charset=utf-8'},
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'access-control-allow-origin': '*',
+          },
         );
       });
 
-      // 4. POST /mcp: 直连 JSON-RPC 端点（用于 Agent 或工具快速调用）
+      // 4. POST /messages: 处理 MCP SSE 客户端请求
+      router.post('/messages', (Request request) async {
+        final bodyStr = await request.readAsString();
+        final jsonBody = json.decode(bodyStr);
+        final responsePayload = await _handleJsonRpc(jsonBody);
+
+        final sessionId = request.url.queryParameters['sessionId'];
+        if (sessionId != null && _sseSessions.containsKey(sessionId)) {
+          final sseController = _sseSessions[sessionId];
+          sseController?.add('event: message\ndata: ${json.encode(responsePayload)}\n\n');
+        }
+
+        return Response.ok(
+          json.encode(responsePayload),
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'access-control-allow-origin': '*',
+          },
+        );
+      });
+
+      // 5. POST /mcp: 直连 JSON-RPC 端点（用于 Agent 或工具快速调用）
       router.post('/mcp', (Request request) async {
         final bodyStr = await request.readAsString();
         final jsonBody = json.decode(bodyStr);
@@ -118,7 +138,10 @@ class McpServerService {
 
         return Response.ok(
           json.encode(responsePayload),
-          headers: {'content-type': 'application/json; charset=utf-8'},
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'access-control-allow-origin': '*',
+          },
         );
       });
 

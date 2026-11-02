@@ -134,9 +134,35 @@ void main() {
       );
       expect(controller.text.isNotEmpty, isTrue);
     });
+
+    test('WorkbenchState 序列化与反序列化测试', () {
+      final state = WorkbenchState(
+        openTabs: [
+          WorkbenchTabState(id: 'req-1', type: 'request'),
+          WorkbenchTabState(id: 'col-1', type: 'container', isCollection: true),
+        ],
+        activeTabIndex: 1,
+        expandedNodeIds: ['col-1', 'folder-auth'],
+      );
+
+      final jsonMap = state.toJson();
+      final restored = WorkbenchState.fromJson(jsonMap);
+
+      expect(restored.activeTabIndex, 1);
+      expect(restored.openTabs.length, 2);
+      expect(restored.openTabs[0].id, 'req-1');
+      expect(restored.openTabs[0].type, 'request');
+      expect(restored.openTabs[1].id, 'col-1');
+      expect(restored.openTabs[1].isCollection, isTrue);
+      expect(restored.expandedNodeIds, ['col-1', 'folder-auth']);
+    });
   });
 
   testWidgets('MindPostApp 初始渲染烟雾测试', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
     await tester.pumpWidget(const MindPostApp());
     expect(find.byType(MaterialApp), findsOneWidget);
   });

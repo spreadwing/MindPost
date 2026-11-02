@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../models/workspace.dart';
 import '../models/api_collection.dart';
+import '../models/api_folder.dart';
 import '../models/api_request.dart';
 import '../models/api_response.dart';
 import '../models/environment.dart';
@@ -41,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late McpServerService _mcpServerService;
 
   Workspace _workspace = Workspace.createDemo();
-  bool _isLoadingWorkspace = false;
+  bool _isLoadingWorkspace = true;
   bool _isMigratingApipost = false;
   bool _isSyncingS3 = false;
   String _s3SyncStatus = '';
@@ -50,6 +52,60 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // 打开的工作区标签页列表 (支持 API 调试页与容器公共配置页)
   final List<WorkbenchTab> _tabs = [];
   int _activeTabIndex = 0;
+
+  // 记住的工作区 UI 状态：边侧栏展开节点集合与工作台状态持久化防抖
+  final Set<String> _expandedNodeIds = {};
+  bool _hasLoadedWorkbenchState = false;
+  Timer? _persistWorkbenchDebounceTimer;
+
+  void _schedulePersistWorkbenchState() {
+    if (!_hasLoadedWorkbenchState) return;
+    _persistWorkbenchDebounceTimer?.cancel();
+    _persistWorkbenchDebounceTimer =
+        Timer(const Duration(milliseconds: 300), () {
+      _persistWorkbenchStateNow();
+    });
+  }
+
+  void _persistWorkbenchStateNow() {
+    if (!_hasLoadedWorkbenchState) return;
+    _persistWorkbenchDebounceTimer?.cancel();
+    _persistWorkbenchDebounceTimer = null;
+
+    final openTabsState = _tabs.map((tab) {
+      return WorkbenchTabState(
+        id: tab.id,
+        type: tab.type == TabType.request ? 'request' : 'container',
+        isCollection: tab.isCollection,
+      );
+    }).toList();
+
+    final state = WorkbenchState(
+      openTabs: openTabsState,
+      activeTabIndex: _activeTabIndex,
+      expandedNodeIds: _expandedNodeIds.toList(),
+    );
+
+    _storageService.saveWorkbenchStateSync(state);
+  }
+
+  void _removeStaleTabs() {
+    _tabs.removeWhere((tab) {
+      if (tab.type == TabType.request) {
+        return _workspace.findRequestById(tab.id) == null;
+      } else {
+        return _workspace.findContainerById(tab.id,
+                isCollection: tab.isCollection) ==
+            null;
+      }
+    });
+    if (_tabs.isEmpty) {
+      _activeTabIndex = 0;
+    } else if (_activeTabIndex >= _tabs.length) {
+      _activeTabIndex = _tabs.length - 1;
+    }
+    _syncCurrentRequestToControllers();
+  }
 
   // 请求执行状态与响应映射
   final Map<String, bool> _requestLoading = {};
@@ -106,14 +162,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _resTabController = TabController(length: 4, vsync: this);
     HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
 
-    if (_workspace.collections.isNotEmpty) {
-      final allReqs = _workspace.collections.first.findAllRequests();
-      if (allReqs.isNotEmpty) {
-        _tabs.add(WorkbenchTab.request(allReqs.first));
-        _activeTabIndex = 0;
-        _syncCurrentRequestToControllers();
-      }
-    }
+    // 标签与节点状态在 _initData() 异步加载完成后再统一恢复，避免初次渲染时被 Demo 数据覆盖
 
     _mcpServerService = McpServerService(
       httpClientService: _httpClientService,
@@ -130,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     TrayWindowService.instance.init(
+      onBeforeClose: () => _persistWorkbenchStateNow(),
       shouldMinimizeToTray: () => _workspace.minimizeToTrayOnClose,
     );
 
@@ -204,38 +254,99 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void _collectAllFolderIds(List<ApiFolder> folders, Set<String> target) {
+    for (final f in folders) {
+      target.add(f.id);
+      _collectAllFolderIds(f.folders, target);
+    }
+  }
+
   Future<void> _initData() async {
     try {
       final loaded = await _storageService.loadWorkspace();
       if (!mounted) return;
-      setState(() {
-        _workspace = loaded;
-        _mcpServerService.updateWorkspace(_workspace);
-        _isLoadingWorkspace = false;
-      });
+      _workspace = loaded;
+      _mcpServerService.updateWorkspace(_workspace);
 
       // 若当前工作区尚未包含 Apipost 迁移的「吉利」根目录，自动通过 Apipost MCP 迁移
       if (!_workspace.collections.any((c) => c.id == '1f727e84f71160')) {
         await _migrateFromApipostMcp(silent: true);
       }
 
+      final savedState = await _storageService.loadWorkbenchState();
+      if (!mounted) return;
+
+      final restoredTabs = <WorkbenchTab>[];
+      if (savedState != null) {
+        _expandedNodeIds.clear();
+        if (savedState.expandedNodeIds.isNotEmpty) {
+          _expandedNodeIds.addAll(savedState.expandedNodeIds);
+        } else {
+          for (final col in _workspace.collections) {
+            _expandedNodeIds.add(col.id);
+            _collectAllFolderIds(col.folders, _expandedNodeIds);
+          }
+        }
+
+        for (final tabState in savedState.openTabs) {
+          if (tabState.type == 'request') {
+            final req = _workspace.findRequestById(tabState.id);
+            if (req != null) {
+              restoredTabs.add(WorkbenchTab.request(req));
+            }
+          } else if (tabState.type == 'container') {
+            final container = _workspace.findContainerById(
+              tabState.id,
+              isCollection: tabState.isCollection,
+            );
+            if (container != null) {
+              restoredTabs.add(WorkbenchTab.container(
+                container,
+                isCollection: tabState.isCollection,
+              ));
+            }
+          }
+        }
+      } else {
+        _expandedNodeIds.clear();
+        for (final col in _workspace.collections) {
+          _expandedNodeIds.add(col.id);
+          _collectAllFolderIds(col.folders, _expandedNodeIds);
+        }
+      }
+
+      // 如果没有可恢复的 Tab（例如首次运行或所有引用的接口失效），兜底打开工作区的第一个有效接口
+      if (restoredTabs.isEmpty && _workspace.collections.isNotEmpty) {
+        final allReqs = _workspace.collections.first.findAllRequests();
+        if (allReqs.isNotEmpty) {
+          restoredTabs.add(WorkbenchTab.request(allReqs.first));
+        } else if (_workspace.collections.first.requests.isNotEmpty) {
+          restoredTabs.add(WorkbenchTab.request(_workspace.collections.first.requests.first));
+        }
+      }
+
+      final targetActiveIndex = (savedState != null && restoredTabs.isNotEmpty)
+          ? savedState.activeTabIndex.clamp(0, restoredTabs.length - 1)
+          : 0;
+
       if (mounted) {
         setState(() {
           _tabs.clear();
-          if (_workspace.collections.isNotEmpty) {
-            final allReqs = _workspace.collections.first.findAllRequests();
-            if (allReqs.isNotEmpty) {
-              _openRequest(allReqs.first);
-            } else if (_workspace.collections.first.requests.isNotEmpty) {
-              _openRequest(_workspace.collections.first.requests.first);
-            }
-          }
+          _tabs.addAll(restoredTabs);
+          _activeTabIndex = targetActiveIndex;
+          _hasLoadedWorkbenchState = true;
+          _isLoadingWorkspace = false;
+          _syncCurrentRequestToControllers();
         });
       }
+
+      // 在内存成功恢复后，刷新一次当前有效状态到磁盘，覆盖可能存在的脏数据
+      _persistWorkbenchStateNow();
     } catch (e) {
       if (mounted) {
         setState(() {
           _workspace = Workspace.createDemo();
+          _hasLoadedWorkbenchState = true;
           _isLoadingWorkspace = false;
         });
       }
@@ -352,6 +463,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _persistWorkbenchDebounceTimer?.cancel();
+    _persistWorkbenchStateNow();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     _mcpServerService.stopServer();
     _reqTabController.dispose();
@@ -608,6 +721,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _syncCurrentRequestToControllers();
       });
     }
+    _schedulePersistWorkbenchState();
   }
 
   void _openContainer(dynamic container, bool isCollection) {
@@ -625,6 +739,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _activeTabIndex = _tabs.length - 1;
       });
     }
+    _schedulePersistWorkbenchState();
   }
 
   void _handleTabTap(int index) {
@@ -647,6 +762,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _activeTabIndex = index;
         _syncCurrentRequestToControllers();
       });
+      _schedulePersistWorkbenchState();
     }
   }
 
@@ -663,6 +779,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
       _syncCurrentRequestToControllers();
     });
+    _schedulePersistWorkbenchState();
   }
 
   void _closeOtherTabs(int keepIndex) {
@@ -675,6 +792,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _activeTabIndex = 0;
       _syncCurrentRequestToControllers();
     });
+    _schedulePersistWorkbenchState();
   }
 
   void _closeTabsToRight(int index) {
@@ -686,6 +804,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
       _syncCurrentRequestToControllers();
     });
+    _schedulePersistWorkbenchState();
   }
 
   void _closeTabsToLeft(int index) {
@@ -697,6 +816,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _activeTabIndex = foundIdx >= 0 ? foundIdx : 0;
       _syncCurrentRequestToControllers();
     });
+    _schedulePersistWorkbenchState();
   }
 
   void _closeSavedTabs() {
@@ -711,6 +831,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
       _syncCurrentRequestToControllers();
     });
+    _schedulePersistWorkbenchState();
   }
 
   void _closeAllTabs() {
@@ -718,6 +839,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _tabs.clear();
       _activeTabIndex = 0;
     });
+    _schedulePersistWorkbenchState();
   }
 
   void _addNewTab() {
@@ -3630,6 +3752,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
     _storageService.saveWorkspace(_workspace);
     _openContainer(newCol, true);
+    _schedulePersistWorkbenchState();
   }
 
   // 2a. 最左侧功能导航窄竖栏：切换 API 树与历史记录
@@ -3868,6 +3991,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 activeContainerId: _currentTab?.type == TabType.container
                     ? _currentTab!.id
                     : null,
+                initialExpandedIds:
+                    _hasLoadedWorkbenchState ? _expandedNodeIds : null,
+                onExpandedChanged: (ids) {
+                  _expandedNodeIds.clear();
+                  _expandedNodeIds.addAll(ids);
+                  _hasLoadedWorkbenchState = true;
+                  _schedulePersistWorkbenchState();
+                },
                 onRequestSelected: _openRequest,
                 onContainerSelected: _openContainer,
                 onAddNewCollection: _addNewCollection,
@@ -3881,8 +4012,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         tab.title = (tab.container as dynamic).name as String;
                       }
                     }
+                    _removeStaleTabs();
                   });
                   _storageService.saveWorkspace(_workspace);
+                  _schedulePersistWorkbenchState();
                 },
               ),
       ),

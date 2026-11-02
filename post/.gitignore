@@ -52,3 +52,9 @@ app.*.map.json
 
 # Audio files
 *.mp3
+
+# Temporary scratch files
+*.html
+*.js
+*.py
+*.png

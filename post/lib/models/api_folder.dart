@@ -65,6 +65,16 @@ class ApiFolder {
     return null;
   }
 
+  /// 递归查找子目录
+  ApiFolder? findFolderById(String targetId) {
+    if (id == targetId) return this;
+    for (final folder in folders) {
+      final found = folder.findFolderById(targetId);
+      if (found != null) return found;
+    }
+    return null;
+  }
+
   /// 收集该目录下所有后代请求
   List<ApiRequest> findAllRequests() {
     final list = <ApiRequest>[...requests];

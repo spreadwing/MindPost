@@ -171,6 +171,22 @@ class Workspace {
     return null;
   }
 
+  /// 在工作区中根据 ID 查找容器（集合或多级文件夹）
+  dynamic findContainerById(String targetId, {bool? isCollection}) {
+    if (isCollection != false) {
+      for (final col in collections) {
+        if (col.id == targetId) return col;
+      }
+    }
+    if (isCollection != true) {
+      for (final col in collections) {
+        final found = col.findFolderById(targetId);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
+
   /// 获取严格按调用时间倒序排列（最新调用排在最上方）且同一接口去重的历史记录列表
   List<ApiHistoryItem> get sortedDeduplicatedHistory {
     final sorted = List<ApiHistoryItem>.from(apiHistory)

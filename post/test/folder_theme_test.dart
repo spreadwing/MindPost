@@ -72,7 +72,13 @@ void main() {
         ),
       );
 
-      expect(find.byType(Stack), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(FolderThemeIcon),
+          matching: find.byType(Stack),
+        ),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
       expect(find.byIcon(Icons.folder_outlined), findsOneWidget);
     });
@@ -98,7 +104,13 @@ void main() {
         ),
       );
 
-      expect(find.byType(Stack), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(FolderThemeIcon),
+          matching: find.byType(Stack),
+        ),
+        findsNothing,
+      );
       expect(find.byIcon(Icons.folder_open_outlined), findsOneWidget);
     });
 
@@ -123,7 +135,13 @@ void main() {
         ),
       );
 
-      expect(find.byType(Stack), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(FolderThemeIcon),
+          matching: find.byType(Stack),
+        ),
+        findsNothing,
+      );
       expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
     });
   });

@@ -21,16 +21,21 @@ class TrayWindowService with WindowListener, TrayListener {
   /// 回调函数：当应用缩小到托盘时通知外部（例如显示提示等）
   VoidCallback? onMinimizedToTray;
 
+  /// 回调函数：窗口关闭或退出前触发（用于持久化状态等）
+  FutureOr<void> Function()? onBeforeClose;
+
   bool get isSupported =>
       !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
 
   Future<void> init({
     bool Function()? shouldMinimizeToTray,
     VoidCallback? onMinimizedToTray,
+    FutureOr<void> Function()? onBeforeClose,
   }) async {
     if (!isSupported || _initialized) return;
     this.shouldMinimizeToTray = shouldMinimizeToTray;
     this.onMinimizedToTray = onMinimizedToTray;
+    this.onBeforeClose = onBeforeClose;
 
     try {
       // 1. 初始化 windowManager 监听并拦截系统原生关闭行为
@@ -121,6 +126,12 @@ class TrayWindowService with WindowListener, TrayListener {
   @override
   void onWindowClose() async {
     if (_isExiting) return;
+
+    try {
+      await onBeforeClose?.call();
+    } catch (e) {
+      debugPrint('[TrayWindowService] onBeforeClose 执行异常: $e');
+    }
 
     final shouldMin = shouldMinimizeToTray?.call() ?? true;
     if (shouldMin) {
@@ -215,6 +226,11 @@ class TrayWindowService with WindowListener, TrayListener {
   Future<void> exitApp() async {
     if (_isExiting) return;
     _isExiting = true;
+    try {
+      await onBeforeClose?.call();
+    } catch (e) {
+      debugPrint('[TrayWindowService] 退出前保存状态异常: $e');
+    }
     Timer.run(() async {
       try {
         windowManager.removeListener(this);
