@@ -75,18 +75,26 @@ class McpServerService {
       // 2. GET /sse: 标准 MCP SSE 长连接端点
       router.get('/sse', (Request request) {
         final sessionId = const Uuid().v4();
-        final controller = StreamController<String>.broadcast();
+        late final StreamController<String> controller;
+        controller = StreamController<String>.broadcast(
+          onCancel: () {
+            _sseSessions.remove(sessionId);
+            controller.close();
+          },
+        );
         _sseSessions[sessionId] = controller;
 
         // 发送标准 MCP 握手事件
         Timer.run(() {
-          controller.add('event: endpoint\ndata: /messages?sessionId=$sessionId\n\n');
+          if (!controller.isClosed) {
+            controller.add('event: endpoint\ndata: /messages?sessionId=$sessionId\n\n');
+          }
         });
 
         return Response.ok(
-          controller.stream,
+          controller.stream.transform(utf8.encoder),
           headers: {
-            'content-type': 'text/event-stream',
+            'content-type': 'text/event-stream; charset=utf-8',
             'cache-control': 'no-cache',
             'connection': 'keep-alive',
             'access-control-allow-origin': '*',
@@ -118,7 +126,9 @@ class McpServerService {
         final sessionId = request.url.queryParameters['sessionId'];
         if (sessionId != null && _sseSessions.containsKey(sessionId)) {
           final sseController = _sseSessions[sessionId];
-          sseController?.add('event: message\ndata: ${json.encode(responsePayload)}\n\n');
+          if (sseController != null && !sseController.isClosed) {
+            sseController.add('event: message\ndata: ${json.encode(responsePayload)}\n\n');
+          }
         }
 
         return Response.ok(
