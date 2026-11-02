@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_fonts.dart';
+import '../../models/api_container.dart';
 import '../../models/api_request.dart';
 import '../../models/environment.dart';
 import 'key_value_editor.dart';
@@ -7,7 +8,7 @@ import 'json_syntax_highlighter.dart';
 
 /// 嵌入在主工作区 Tab 页内的目录公共配置、参数与脚本视图
 class ContainerSettingsView extends StatefulWidget {
-  final dynamic container; // ApiCollection 或 ApiFolder
+  final ApiContainer container;
   final bool isCollection;
   final VoidCallback? onChanged;
   final VoidCallback onSaved;
@@ -43,24 +44,21 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
   }
 
   void _initControllers() {
-    _nameController =
-        TextEditingController(text: widget.container.name as String? ?? '');
-    _descController = TextEditingController(
-        text: widget.container.description as String? ?? '');
-    _preScriptController = JsSyntaxHighlightController(
-        text: widget.container.preRequestScript as String? ?? '');
-    _postScriptController = JsSyntaxHighlightController(
-        text: widget.container.postRequestScript as String? ?? '');
+    _nameController = TextEditingController(text: widget.container.name);
+    _descController = TextEditingController(text: widget.container.description);
+    _preScriptController =
+        JsSyntaxHighlightController(text: widget.container.preRequestScript);
+    _postScriptController =
+        JsSyntaxHighlightController(text: widget.container.postRequestScript);
 
-    _headers = widget.container.headers as List<KeyValueItem>;
-    _variables = widget.container.variables as List<VariableItem>;
+    _headers = widget.container.headers;
+    _variables = widget.container.variables;
   }
 
   @override
   void didUpdateWidget(covariant ContainerSettingsView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if ((oldWidget.container as dynamic).id !=
-        (widget.container as dynamic).id) {
+    if (oldWidget.container.id != widget.container.id) {
       _nameController.dispose();
       _descController.dispose();
       _preScriptController.dispose();
@@ -205,7 +203,7 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
                         children: [
                           Flexible(
                             child: Text(
-                              widget.container.name as String,
+                              widget.container.name,
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,

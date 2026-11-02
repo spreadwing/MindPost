@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../models/workspace.dart';
 import '../models/api_collection.dart';
 import '../models/api_folder.dart';
+import '../models/api_container.dart';
 import '../models/api_request.dart';
 import '../models/api_response.dart';
 import '../models/environment.dart';
@@ -724,8 +725,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _schedulePersistWorkbenchState();
   }
 
-  void _openContainer(dynamic container, bool isCollection) {
-    final id = (container as dynamic).id as String;
+  void _openContainer(ApiContainer container, bool isCollection) {
+    final id = container.id;
     final existingIndex = _tabs.indexWhere(
         (t) => t.type == TabType.container && t.id == id);
     if (existingIndex >= 0) {
@@ -880,7 +881,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _requestLoading[req.id] = true;
       _recordApiHistory(req, null, calledAt: calledTime);
     });
-    _storageService.saveWorkspace(_workspace);
+    unawaited(_storageService.saveWorkspace(_workspace));
 
     try {
       final execResult = await _httpClientService.executeRequest(
@@ -913,7 +914,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           }
         }
       });
-      _storageService.saveWorkspace(_workspace);
+      unawaited(_storageService.saveWorkspace(_workspace));
     } finally {
       if (mounted) {
         setState(() {
@@ -1254,7 +1255,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(6),
                     onTap: () {
-                      showDialog(
+                      showDialog<void>(
                         context: context,
                         builder: (_) => EnvironmentDialog(
                           workspace: _workspace,
@@ -1288,7 +1289,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // MCP Server 状态与控制面板入口
           InkWell(
             onTap: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 builder: (_) => McpPanel(
                   mcpServerService: _mcpServerService,
@@ -1539,7 +1540,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       },
     ];
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
@@ -4911,19 +4912,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: currentTab.type == TabType.container
               ? ContainerSettingsView(
                   key: ValueKey(currentTab.id),
-                  container: currentTab.container,
+                  container: currentTab.container!,
                   isCollection: currentTab.isCollection,
                   onChanged: () {
                     setState(() {
-                      currentTab.title =
-                          (currentTab.container as dynamic).name as String;
+                      currentTab.title = currentTab.container!.name;
                       currentTab.isDirty = true;
                     });
                   },
                   onSaved: () {
                     setState(() {
-                      currentTab.title =
-                          (currentTab.container as dynamic).name as String;
+                      currentTab.title = currentTab.container!.name;
                       currentTab.isDirty = false;
                     });
                     _storageService.saveWorkspace(_workspace);
@@ -4942,7 +4941,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final isCurrentDirty = _currentTab?.isDirty == true;
 
     // 查找所属父目录链以合并目录级变量
-    List<dynamic> parentChain = [];
+    List<ApiContainer> parentChain = [];
     for (final col in _workspace.collections) {
       if (col.findRequestById(req.id) != null) {
         parentChain = col.findParentChainForRequest(req.id);

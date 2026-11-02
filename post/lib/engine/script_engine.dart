@@ -137,7 +137,7 @@ class ScriptEngine {
             data = bodyObj;
           }
 
-          final resp = await dio.request(
+          final resp = await dio.request<dynamic>(
             url,
             data: data,
             options: Options(

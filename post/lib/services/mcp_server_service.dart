@@ -125,6 +125,7 @@ class McpServerService {
 
         final sessionId = request.url.queryParameters['sessionId'];
         if (sessionId != null && _sseSessions.containsKey(sessionId)) {
+          // ignore: close_sinks
           final sseController = _sseSessions[sessionId];
           if (sseController != null && !sseController.isClosed) {
             sseController.add('event: message\ndata: ${json.encode(responsePayload)}\n\n');
@@ -202,7 +203,7 @@ class McpServerService {
             'protocolVersion': '2024-11-05',
             'capabilities': {
               'tools': {'listChanged': true},
-              'resources': {},
+              'resources': <String, dynamic>{},
             },
             'serverInfo': {
               'name': 'mindpost-workbench',
@@ -212,7 +213,7 @@ class McpServerService {
         };
 
       case 'notifications/initialized':
-        return {'jsonrpc': '2.0', 'id': id, 'result': {}};
+        return {'jsonrpc': '2.0', 'id': id, 'result': <String, dynamic>{}};
 
       case 'tools/list':
         return {

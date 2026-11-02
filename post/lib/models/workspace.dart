@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'api_collection.dart';
 import 'api_folder.dart';
+import 'api_container.dart';
 import 'api_request.dart';
 import 'environment.dart';
 import 's3_sync_config.dart';
@@ -172,7 +173,7 @@ class Workspace {
   }
 
   /// 在工作区中根据 ID 查找容器（集合或多级文件夹）
-  dynamic findContainerById(String targetId, {bool? isCollection}) {
+  ApiContainer? findContainerById(String targetId, {bool? isCollection}) {
     if (isCollection != false) {
       for (final col in collections) {
         if (col.id == targetId) return col;

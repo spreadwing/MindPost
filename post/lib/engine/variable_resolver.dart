@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:uuid/uuid.dart';
 import '../models/api_collection.dart';
+import '../models/api_container.dart';
 import '../models/workspace.dart';
 
 class VariableResolver {
@@ -8,7 +9,7 @@ class VariableResolver {
   static Map<String, String> buildVariableMap({
     required Workspace workspace,
     ApiCollection? collection,
-    List<dynamic>? parentContainers,
+    List<ApiContainer>? parentContainers,
     Map<String, String>? requestVariables,
   }) {
     final map = <String, String>{};
@@ -36,12 +37,9 @@ class VariableResolver {
     // 3. 集合与各级父目录变量（自顶向下合并，子级覆盖父级）
     if (parentContainers != null) {
       for (final container in parentContainers) {
-        final vars = container.variables as List<dynamic>?;
-        if (vars != null) {
-          for (final v in vars) {
-            if (v.isEnabled == true && (v.key as String).isNotEmpty) {
-              map[v.key as String] = v.value as String;
-            }
+        for (final v in container.variables) {
+          if (v.isEnabled && v.key.isNotEmpty) {
+            map[v.key] = v.value;
           }
         }
       }
@@ -100,11 +98,11 @@ class VariableResolver {
     required Map<String, String> variables,
     String? currentBaseUrl,
   }) {
-    var trimmed = rawUrl.trim();
+    final trimmed = rawUrl.trim();
     if (trimmed.isEmpty) return '';
 
     // 1. 先进行变量插值替换（例如替换 {{baseUrl}}）
-    var interpolated = interpolate(trimmed, variables);
+    final interpolated = interpolate(trimmed, variables);
 
     // 2. 检查是否已经是完整的协议地址 (http:// 或 https://)
     final uri = Uri.tryParse(interpolated);

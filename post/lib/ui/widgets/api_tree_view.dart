@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../models/workspace.dart';
+import '../../models/api_container.dart';
 import '../../models/api_collection.dart';
 import '../../models/api_folder.dart';
 import '../../models/api_request.dart';
@@ -221,7 +222,7 @@ class DragNodePayload {
   final String name;
   final String type; // 'request' 或 'folder'
   final dynamic node; // ApiRequest 或 ApiFolder
-  final dynamic sourceParent; // ApiCollection 或 ApiFolder
+  final ApiContainer? sourceParent; // ApiCollection 或 ApiFolder
 
   DragNodePayload({
     required this.id,
@@ -237,7 +238,7 @@ class ApiTreeView extends StatefulWidget {
   final String? activeRequestId;
   final String? activeContainerId;
   final void Function(ApiRequest request) onRequestSelected;
-  final void Function(dynamic container, bool isCollection)? onContainerSelected;
+  final void Function(ApiContainer container, bool isCollection)? onContainerSelected;
   final VoidCallback onWorkspaceChanged;
   final VoidCallback? onAddNewCollection;
   final FolderThemeConfig? folderThemeConfig;
@@ -348,8 +349,8 @@ class ApiTreeViewState extends State<ApiTreeView> {
   }
 
   /// 处理目录节点点击：单击显示目录设置参数页，快速双击仅展开/折叠目录而不触发单击
-  void _handleContainerTap(dynamic container, bool isCollection) {
-    final id = (container as dynamic).id as String;
+  void _handleContainerTap(ApiContainer container, bool isCollection) {
+    final id = container.id;
     final now = DateTime.now();
     if (_lastTappedContainerId == id &&
         _lastContainerTapTime != null &&
@@ -438,7 +439,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
     required void Function(String newName) onConfirmed,
   }) async {
     final controller = TextEditingController(text: initialValue);
-    await showDialog(
+    await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(title, style: const TextStyle(fontSize: 16)),
@@ -480,7 +481,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
     required String itemName,
     required VoidCallback onConfirmed,
   }) async {
-    await showDialog(
+    await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('确认删除', style: TextStyle(fontSize: 16)),
@@ -615,7 +616,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
         widget.onRequestSelected(importedReq);
       }
     } else if (val == 'add_folder') {
-      _showRenameDialog(
+      unawaited(_showRenameDialog(
         title: '在【${col.name}】下新建目录',
         initialValue: '新目录',
         onConfirmed: (name) {
@@ -624,26 +625,26 @@ class ApiTreeViewState extends State<ApiTreeView> {
           _notifyExpandedChanged();
           widget.onWorkspaceChanged();
         },
-      );
+      ));
     } else if (val == 'settings') {
       widget.onContainerSelected?.call(col, true);
     } else if (val == 'rename') {
-      _showRenameDialog(
+      unawaited(_showRenameDialog(
         title: '重命名目录',
         initialValue: col.name,
         onConfirmed: (newName) {
           col.name = newName;
           widget.onWorkspaceChanged();
         },
-      );
+      ));
     } else if (val == 'delete') {
-      _showConfirmDeleteDialog(
+      unawaited(_showConfirmDeleteDialog(
         itemName: col.name,
         onConfirmed: () {
           widget.workspace.collections.removeWhere((c) => c.id == col.id);
           widget.onWorkspaceChanged();
         },
-      );
+      ));
     }
   }
 
@@ -754,7 +755,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
         widget.onRequestSelected(importedReq);
       }
     } else if (val == 'add_subfolder') {
-      _showRenameDialog(
+      unawaited(_showRenameDialog(
         title: '在【${folder.name}】下新建目录',
         initialValue: '新目录',
         onConfirmed: (name) {
@@ -763,30 +764,28 @@ class ApiTreeViewState extends State<ApiTreeView> {
           _notifyExpandedChanged();
           widget.onWorkspaceChanged();
         },
-      );
+      ));
     } else if (val == 'settings') {
       widget.onContainerSelected?.call(folder, false);
     } else if (val == 'rename') {
-      _showRenameDialog(
+      unawaited(_showRenameDialog(
         title: '重命名目录',
         initialValue: folder.name,
         onConfirmed: (newName) {
           folder.name = newName;
           widget.onWorkspaceChanged();
         },
-      );
+      ));
     } else if (val == 'delete') {
-      _showConfirmDeleteDialog(
+      unawaited(_showConfirmDeleteDialog(
         itemName: folder.name,
         onConfirmed: () {
-          if (parent is ApiCollection) {
-            parent.folders.removeWhere((f) => f.id == folder.id);
-          } else if (parent is ApiFolder) {
+          if (parent is ApiContainer) {
             parent.folders.removeWhere((f) => f.id == folder.id);
           }
           widget.onWorkspaceChanged();
         },
-      );
+      ));
     }
   }
 
@@ -856,34 +855,30 @@ class ApiTreeViewState extends State<ApiTreeView> {
         id: null,
         name: '${req.name} - 副本',
       );
-      if (parent is ApiCollection) {
-        parent.requests.add(cloned);
-      } else if (parent is ApiFolder) {
+      if (parent is ApiContainer) {
         parent.requests.add(cloned);
       }
       widget.onWorkspaceChanged();
       widget.onRequestSelected(cloned);
     } else if (val == 'rename') {
-      _showRenameDialog(
+      unawaited(_showRenameDialog(
         title: '重命名 API 请求',
         initialValue: req.name,
         onConfirmed: (newName) {
           req.name = newName;
           widget.onWorkspaceChanged();
         },
-      );
+      ));
     } else if (val == 'delete') {
-      _showConfirmDeleteDialog(
+      unawaited(_showConfirmDeleteDialog(
         itemName: req.name,
         onConfirmed: () {
-          if (parent is ApiCollection) {
-            parent.requests.removeWhere((r) => r.id == req.id);
-          } else if (parent is ApiFolder) {
+          if (parent is ApiContainer) {
             parent.requests.removeWhere((r) => r.id == req.id);
           }
           widget.onWorkspaceChanged();
         },
-      );
+      ));
     }
   }
 
@@ -911,17 +906,11 @@ class ApiTreeViewState extends State<ApiTreeView> {
     // 3. 从原父级容器中移除
     if (payload.sourceParent == null && payload.node is ApiCollection) {
       widget.workspace.collections.removeWhere((c) => c.id == payload.id);
-    } else if (payload.sourceParent is ApiCollection) {
+    } else if (payload.sourceParent != null) {
       if (payload.type == 'request') {
-        payload.sourceParent.requests.removeWhere((r) => r.id == payload.id);
+        payload.sourceParent!.requests.removeWhere((r) => r.id == payload.id);
       } else {
-        payload.sourceParent.folders.removeWhere((f) => f.id == payload.id);
-      }
-    } else if (payload.sourceParent is ApiFolder) {
-      if (payload.type == 'request') {
-        payload.sourceParent.requests.removeWhere((r) => r.id == payload.id);
-      } else {
-        payload.sourceParent.folders.removeWhere((f) => f.id == payload.id);
+        payload.sourceParent!.folders.removeWhere((f) => f.id == payload.id);
       }
     }
 
@@ -980,7 +969,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
 
   // 递归渲染文件夹节点 (包含拖拽起点与放置目标支持)
   Widget _buildFolderNode(
-      ApiFolder folder, dynamic parent, int depth, SidebarPalette palette) {
+      ApiFolder folder, ApiContainer parent, int depth, SidebarPalette palette) {
     final isExpanded = _expandedIds.contains(folder.id);
     final totalChildCount = folder.requests.length + folder.folders.length;
     final isHovered = _hoverTargetId == folder.id;
@@ -1166,7 +1155,7 @@ class ApiTreeViewState extends State<ApiTreeView> {
 
   // 渲染单个 API 请求叶子节点 (支持拖拽)
   Widget _buildRequestItem(
-      ApiRequest req, dynamic parent, int depth, SidebarPalette palette) {
+      ApiRequest req, ApiContainer parent, int depth, SidebarPalette palette) {
     final isSelected = widget.activeRequestId == req.id;
 
     // 搜索过滤检查

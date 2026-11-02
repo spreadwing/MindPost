@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../app_fonts.dart';
+import '../../models/api_container.dart';
 import '../../models/api_request.dart';
 import 'key_value_editor.dart';
 import 'json_syntax_highlighter.dart';
 
 class ContainerSettingsDialog extends StatefulWidget {
-  final dynamic container; // ApiCollection 或 ApiFolder
+  final ApiContainer container;
   final bool isCollection;
   final VoidCallback onSaved;
 
@@ -42,7 +43,7 @@ class _ContainerSettingsDialogState extends State<ContainerSettingsDialog>
     _postScriptController =
         JsSyntaxHighlightController(text: widget.container.postRequestScript);
 
-    _headers = widget.container.headers as List<KeyValueItem>;
+    _headers = widget.container.headers;
   }
 
   @override

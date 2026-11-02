@@ -1536,7 +1536,7 @@ class _ResponseTableViewerState extends State<ResponseTableViewer> {
     }
 
     // 优先匹配选中的数组路径；否则优先选择首个包含对象元素的非空数组
-    JsonArrayCandidate activeCandidate = candidates.firstWhere(
+    final activeCandidate = candidates.firstWhere(
       (c) => c.path == widget.selectedArrayPath,
       orElse: () => candidates.firstWhere(
         (c) => c.items.isNotEmpty && c.items.first is Map,

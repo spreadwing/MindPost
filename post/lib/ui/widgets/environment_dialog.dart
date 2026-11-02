@@ -106,7 +106,7 @@ class _EnvironmentDialogState extends State<EnvironmentDialog> {
     final nameController = TextEditingController();
     final valueController = TextEditingController();
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(

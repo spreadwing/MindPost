@@ -110,7 +110,7 @@ pm.test("Response contains data", function () {
             ? '当前正在调试的接口：${widget.activeRequest!.name} · ${widget.activeRequest!.method.nameString} ${widget.activeRequest!.url}'
             : '当前未选中具体接口';
 
-        final response = await dio.post(
+        final response = await dio.post<dynamic>(
           endpoint,
           options: Options(
             headers: {
@@ -149,7 +149,7 @@ pm.test("Response contains data", function () {
       }
     }
 
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
     setState(() {
       _isGenerating = false;

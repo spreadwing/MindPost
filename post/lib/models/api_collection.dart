@@ -1,17 +1,27 @@
 import 'package:uuid/uuid.dart';
 import 'api_request.dart';
 import 'api_folder.dart';
+import 'api_container.dart';
 import 'environment.dart';
 
-class ApiCollection {
+class ApiCollection implements ApiContainer {
+  @override
   final String id;
+  @override
   String name;
+  @override
   String description;
+  @override
   List<KeyValueItem> headers;
+  @override
   List<VariableItem> variables;
+  @override
   String preRequestScript;
+  @override
   String postRequestScript;
+  @override
   List<ApiFolder> folders;
+  @override
   List<ApiRequest> requests;
 
   ApiCollection({
@@ -85,8 +95,8 @@ class ApiCollection {
   }
 
   /// 查找请求所属容器链 (包含当前集合和各级父文件夹)
-  List<dynamic> findParentChainForRequest(String targetId) {
-    final chain = <dynamic>[this];
+  List<ApiContainer> findParentChainForRequest(String targetId) {
+    final chain = <ApiContainer>[this];
     for (final req in requests) {
       if (req.id == targetId) return chain;
     }

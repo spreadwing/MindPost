@@ -6,6 +6,7 @@ import '../models/api_request.dart';
 import '../models/api_response.dart';
 import '../models/workspace.dart';
 import '../models/api_collection.dart';
+import '../models/api_container.dart';
 import '../engine/variable_resolver.dart';
 import '../engine/script_engine.dart';
 
@@ -49,7 +50,7 @@ class HttpClientService {
     final allConsoleLogs = <String>[];
 
     // 0. 查找目标请求所属的父容器链 (Root Collection -> 各级 Folder)
-    List<dynamic> parentChain = [];
+    List<ApiContainer> parentChain = [];
     if (collection != null) {
       parentChain = collection.findParentChainForRequest(request.id);
     } else {
@@ -73,14 +74,14 @@ class HttpClientService {
     };
 
     // 2. 依次执行父容器链与请求自身的前置脚本 (Pre-request Script)
-    Map<String, String> updatedEnv = {};
-    List<KeyValueItem> extraHeaders = [];
-    List<KeyValueItem> extraParams = [];
+    final updatedEnv = <String, String>{};
+    final extraHeaders = <KeyValueItem>[];
+    final extraParams = <KeyValueItem>[];
 
     // 2.1 自顶向下执行父容器链（集合/目录）前置脚本
     for (final container in parentChain) {
-      final cScript = container.preRequestScript as String?;
-      if (cScript != null && cScript.trim().isNotEmpty) {
+      final cScript = container.preRequestScript;
+      if (cScript.trim().isNotEmpty) {
         allConsoleLogs.add('[PRE-SCRIPT] 执行容器【${container.name}】前置脚本');
         final scriptResult = await ScriptEngine.executePreRequestScript(
           script: cScript,
@@ -147,12 +148,9 @@ class HttpClientService {
     // 5. 级联继承父容器公共 Headers，随后由请求自身 Headers 覆盖
     final inheritedHeaders = <String, KeyValueItem>{};
     for (final container in parentChain) {
-      final cHeaders = container.headers as List<KeyValueItem>?;
-      if (cHeaders != null) {
-        for (final h in cHeaders) {
-          if (h.isEnabled && h.key.isNotEmpty) {
-            inheritedHeaders[h.key] = h;
-          }
+      for (final h in container.headers) {
+        if (h.isEnabled && h.key.isNotEmpty) {
+          inheritedHeaders[h.key] = h;
         }
       }
     }
@@ -251,7 +249,7 @@ class HttpClientService {
     // 7. 发送 HTTP 请求
     ApiResponse apiResponse;
     try {
-      final response = await _dio.request(
+      final response = await _dio.request<dynamic>(
         finalUrl,
         data: bodyData,
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
@@ -273,12 +271,12 @@ class HttpClientService {
       final sizeBytes = utf8.encode(bodyStr).length;
 
       // 8. 依次执行父容器链与请求自身后置测试与断言脚本 (Tests / Assertions)
-      List<TestAssertionResult> testResults = [];
+      final testResults = <TestAssertionResult>[];
 
       // 8.1 自顶向下执行父容器测试脚本
       for (final container in parentChain) {
-        final cPostScript = container.postRequestScript as String?;
-        if (cPostScript != null && cPostScript.trim().isNotEmpty) {
+        final cPostScript = container.postRequestScript;
+        if (cPostScript.trim().isNotEmpty) {
           allConsoleLogs.add('[TESTS] 执行容器【${container.name}】后置断言');
           final postResult = await ScriptEngine.executePostRequestScript(
             script: cPostScript,

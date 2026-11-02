@@ -1,4 +1,5 @@
 import 'api_request.dart';
+import 'api_container.dart';
 
 enum TabType { request, container }
 
@@ -8,7 +9,7 @@ class WorkbenchTab {
   String title;
   final TabType type;
   final ApiRequest? request;
-  final dynamic container; // ApiCollection 或 ApiFolder
+  final ApiContainer? container;
   final bool isCollection;
   bool isDirty;
 
@@ -23,8 +24,8 @@ class WorkbenchTab {
     this.container, {
     required this.isCollection,
     this.isDirty = false,
-  })  : id = (container as dynamic).id as String,
-        title = (container as dynamic).name as String,
+  })  : id = container!.id,
+        title = container.name,
         type = TabType.container,
         request = null;
 }
