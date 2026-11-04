@@ -395,4 +395,9 @@ class HttpClientService {
       updatedEnvironmentVariables: updatedEnv,
     );
   }
+
+  /// 释放底层 HTTP 连接池资源
+  void dispose() {
+    _dio.close(force: true);
+  }
 }

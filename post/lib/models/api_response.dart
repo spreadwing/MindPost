@@ -84,8 +84,10 @@ class ApiResponse {
     );
   }
 
-  /// 格式化 Pretty JSON（如果 body 是合法 JSON）
-  String get prettyBody {
+  /// 格式化 Pretty JSON（惰性单次计算并缓存，避免 UI 重绘时重复解析大 JSON）
+  late final String prettyBody = _formatPrettyBody();
+
+  String _formatPrettyBody() {
     if (body.trim().isEmpty) return '';
     try {
       final decoded = json.decode(body);

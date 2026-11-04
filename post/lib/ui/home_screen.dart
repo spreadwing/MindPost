@@ -94,7 +94,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _removeStaleTabs() {
     _tabs.removeWhere((tab) {
       if (tab.type == TabType.request) {
-        return _workspace.findRequestById(tab.id) == null;
+        final isStale = _workspace.findRequestById(tab.id) == null;
+        if (isStale) {
+          _cancelRequest(tab.id);
+          _responses.remove(tab.id);
+        }
+        return isStale;
       } else {
         return _workspace.findContainerById(tab.id,
                 isCollection: tab.isCollection) ==
@@ -114,6 +119,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final Map<String, ApiResponse?> _responses = {};
   final Map<String, CancelToken> _requestCancelTokens = {};
   final Map<String, DateTime> _requestStartTimes = {};
+  final ValueNotifier<int> _durationTickNotifier = ValueNotifier<int>(0);
   Timer? _requestDurationTimer;
 
   void _startDurationTimerIfNeeded() {
@@ -128,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final hasActiveRequest =
           _requestLoading.values.any((loading) => loading);
       if (hasActiveRequest) {
-        setState(() {});
+        _durationTickNotifier.value++;
       } else {
         timer.cancel();
         _requestDurationTimer = null;
@@ -516,6 +522,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _requestDurationTimer?.cancel();
+    _durationTickNotifier.dispose();
+    for (final token in _requestCancelTokens.values) {
+      if (!token.isCancelled) {
+        token.cancel('工作台关闭，自动中止在途请求');
+      }
+    }
+    _requestCancelTokens.clear();
+    _httpClientService.dispose();
     _persistWorkbenchDebounceTimer?.cancel();
     _persistWorkbenchStateNow();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
@@ -922,6 +936,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final req = _currentRequest;
     if (req == null) return;
 
+    // 若该请求存在尚未完成的在途连接，先中止旧请求以防并发竞态
+    _cancelRequest(req.id);
+
     // 同步控制器内容到模型
     req.url = _urlController.text;
     req.bodyContent = _bodyController.text;
@@ -950,7 +967,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         cancelToken: cancelToken,
       );
 
-      if (mounted) {
+      if (mounted && _requestCancelTokens[req.id] == cancelToken) {
         setState(() {
           _responses[req.id] = execResult.response;
           _recordApiHistory(
@@ -979,13 +996,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
       unawaited(_storageService.saveWorkspace(_workspace));
     } finally {
-      _requestCancelTokens.remove(req.id);
-      _requestStartTimes.remove(req.id);
-      if (mounted) {
-        setState(() {
-          _requestLoading[req.id] = false;
-        });
-        _stopDurationTimerIfNoActiveRequests();
+      if (_requestCancelTokens[req.id] == cancelToken) {
+        _requestCancelTokens.remove(req.id);
+        _requestStartTimes.remove(req.id);
+        if (mounted) {
+          setState(() {
+            _requestLoading[req.id] = false;
+          });
+          _stopDurationTimerIfNoActiveRequests();
+        }
       }
     }
   }
@@ -4817,8 +4836,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   /// 响应区正在请求中状态视图（体现正在请求与长请求保持连接，绝不显示上次请求旧状态）
   Widget _buildResponseLoadingView(ApiRequest req) {
-    final durationText = _getCurrentRequestDurationText(req.id);
-
     return Column(
       children: [
         // 响应状态栏 (体现正在请求状态)
@@ -4834,7 +4851,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               const RequestPendingBadge(label: '正在请求'),
               const SizedBox(width: 8),
-              // 实时动态耗时（等宽数字防抖动）
+              // 实时动态耗时（局部监听 + 等宽数字防抖动，不触发顶层 HomeScreen 重建）
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                 decoration: BoxDecoration(
@@ -4847,13 +4864,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     const Icon(Icons.speed_rounded,
                         size: 13, color: Color(0xFFD97706)),
                     const SizedBox(width: 4),
-                    Text(
-                      durationText,
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFB45309),
-                        fontFeatures: [FontFeature.tabularFigures()],
+                    ValueListenableBuilder<int>(
+                      valueListenable: _durationTickNotifier,
+                      builder: (context, _, _) => Text(
+                        _getCurrentRequestDurationText(req.id),
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFB45309),
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                   ],
@@ -4966,24 +4986,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text.rich(
-                      TextSpan(
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 12,
-                        ),
-                        children: [
-                          const TextSpan(text: '已等待 '),
-                          TextSpan(
-                            text: durationText,
-                            style: const TextStyle(
-                              color: Color(0xFF2563EB),
-                              fontWeight: FontWeight.w600,
-                              fontFeatures: [FontFeature.tabularFigures()],
-                            ),
+                    ValueListenableBuilder<int>(
+                      valueListenable: _durationTickNotifier,
+                      builder: (context, _, _) => Text.rich(
+                        TextSpan(
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 12,
                           ),
-                          const TextSpan(text: ' · 持久长连接保持中，正在接收响应报文'),
-                        ],
+                          children: [
+                            const TextSpan(text: '已等待 '),
+                            TextSpan(
+                              text: _getCurrentRequestDurationText(req.id),
+                              style: const TextStyle(
+                                color: Color(0xFF2563EB),
+                                fontWeight: FontWeight.w600,
+                                fontFeatures: [FontFeature.tabularFigures()],
+                              ),
+                            ),
+                            const TextSpan(text: ' · 持久长连接保持中，正在接收响应报文'),
+                          ],
+                        ),
                       ),
                     ),
                   ],

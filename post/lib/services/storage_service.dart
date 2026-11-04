@@ -9,6 +9,7 @@ import '../models/workbench_tab.dart';
 
 class StorageService {
   final Directory? _customDir;
+  Future<void> _saveQueue = Future.value();
 
   StorageService({this._customDir});
 
@@ -89,25 +90,45 @@ class StorageService {
     return demo;
   }
 
-  /// 保存工作区配置到本地文件
-  Future<void> saveWorkspace(Workspace workspace) async {
+  /// 原子化写文件（先写临时文件 flush 后 rename 覆盖，防止并发写或异常中断损坏 JSON）
+  Future<void> _writeFileAtomically(File targetFile, String content) async {
+    final tempFile = File('${targetFile.path}.tmp');
     try {
-      final baseDirPath = await _getWorkspaceDirPath();
-      final mindpostDir = Directory(p.join(baseDirPath, '.mindpost'));
-      if (!await mindpostDir.exists()) {
-        await mindpostDir.create(recursive: true);
-      }
-
-      final workspaceFile = File(p.join(mindpostDir.path, 'workspace.json'));
-      const encoder = JsonEncoder.withIndent('  ');
-      await workspaceFile.writeAsString(encoder.convert(workspace.toJson()));
-
-      final s3ConfigFile = File(p.join(mindpostDir.path, 's3_config.json'));
-      await s3ConfigFile
-          .writeAsString(encoder.convert(workspace.s3Config.toJson()));
+      await tempFile.writeAsString(content, flush: true);
+      await tempFile.rename(targetFile.path);
     } catch (_) {
-      // 写入失败静默防护
+      await targetFile.writeAsString(content, flush: true);
     }
+  }
+
+  /// 保存工作区配置到本地文件（通过串行队列与原子替换保障并发写安全）
+  Future<void> saveWorkspace(Workspace workspace) {
+    final nextTask = _saveQueue.then((_) async {
+      try {
+        final baseDirPath = await _getWorkspaceDirPath();
+        final mindpostDir = Directory(p.join(baseDirPath, '.mindpost'));
+        if (!await mindpostDir.exists()) {
+          await mindpostDir.create(recursive: true);
+        }
+
+        const encoder = JsonEncoder.withIndent('  ');
+        final workspaceFile = File(p.join(mindpostDir.path, 'workspace.json'));
+        await _writeFileAtomically(
+          workspaceFile,
+          encoder.convert(workspace.toJson()),
+        );
+
+        final s3ConfigFile = File(p.join(mindpostDir.path, 's3_config.json'));
+        await _writeFileAtomically(
+          s3ConfigFile,
+          encoder.convert(workspace.s3Config.toJson()),
+        );
+      } catch (_) {
+        // 写入失败静默防护
+      }
+    });
+    _saveQueue = nextTask;
+    return nextTask;
   }
 
   /// 加载工作台 UI 状态（打开的标签页、激活索引、边侧节点展开集合）

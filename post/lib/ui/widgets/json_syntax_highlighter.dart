@@ -34,6 +34,12 @@ class JsonSyntaxHighlightController extends TextEditingController {
     r'|(?<punct>[{}[\],:])', // 标点
   );
 
+  static const int _maxHighlightLength = 150000;
+  String? _cachedText;
+  bool? _cachedIsDark;
+  TextStyle? _cachedBaseStyle;
+  TextSpan? _cachedSpan;
+
   @override
   TextSpan buildTextSpan({
     required BuildContext context,
@@ -49,8 +55,15 @@ class JsonSyntaxHighlightController extends TextEditingController {
         );
 
     final rawText = value.text;
-    if (rawText.isEmpty) {
+    if (rawText.isEmpty || rawText.length > _maxHighlightLength) {
       return TextSpan(style: baseStyle, text: rawText);
+    }
+
+    if (_cachedSpan != null &&
+        _cachedText == rawText &&
+        _cachedIsDark == isDark &&
+        _cachedBaseStyle == baseStyle) {
+      return _cachedSpan!;
     }
 
     final spans = <InlineSpan>[];
@@ -115,7 +128,12 @@ class JsonSyntaxHighlightController extends TextEditingController {
       ));
     }
 
-    return TextSpan(style: baseStyle, children: spans);
+    final result = TextSpan(style: baseStyle, children: spans);
+    _cachedText = rawText;
+    _cachedIsDark = isDark;
+    _cachedBaseStyle = baseStyle;
+    _cachedSpan = result;
+    return result;
   }
 }
 
@@ -166,6 +184,12 @@ class JsSyntaxHighlightController extends TextEditingController {
     r'|(?<punct>[{}()[\].,:;+\-*/%=<>!&|?~^]+)',
   );
 
+  static const int _maxHighlightLength = 150000;
+  String? _cachedText;
+  bool? _cachedIsDark;
+  TextStyle? _cachedBaseStyle;
+  TextSpan? _cachedSpan;
+
   @override
   TextSpan buildTextSpan({
     required BuildContext context,
@@ -181,8 +205,15 @@ class JsSyntaxHighlightController extends TextEditingController {
         );
 
     final rawText = value.text;
-    if (rawText.isEmpty) {
+    if (rawText.isEmpty || rawText.length > _maxHighlightLength) {
       return TextSpan(style: baseStyle, text: rawText);
+    }
+
+    if (_cachedSpan != null &&
+        _cachedText == rawText &&
+        _cachedIsDark == isDark &&
+        _cachedBaseStyle == baseStyle) {
+      return _cachedSpan!;
     }
 
     final spans = <InlineSpan>[];
@@ -284,7 +315,12 @@ class JsSyntaxHighlightController extends TextEditingController {
       ));
     }
 
-    return TextSpan(style: baseStyle, children: spans);
+    final result = TextSpan(style: baseStyle, children: spans);
+    _cachedText = rawText;
+    _cachedIsDark = isDark;
+    _cachedBaseStyle = baseStyle;
+    _cachedSpan = result;
+    return result;
   }
 }
 
