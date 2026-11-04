@@ -192,3 +192,49 @@ class StatusCodeBadge extends StatelessWidget {
     );
   }
 }
+
+/// 请求执行中（Pending / Loading）状态徽章
+class RequestPendingBadge extends StatelessWidget {
+  final String label;
+
+  const RequestPendingBadge({
+    super.key,
+    this.label = '正在请求...',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: const Color(0xFFBFDBFE), width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 10,
+            height: 10,
+            child: CircularProgressIndicator(
+              strokeWidth: 1.6,
+              color: Color(0xFF2563EB),
+              backgroundColor: Color(0xFFDBEAFE),
+            ),
+          ),
+          const SizedBox(width: 7),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF2563EB),
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

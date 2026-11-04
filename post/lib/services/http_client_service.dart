@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:path/path.dart' as p;
 import '../models/api_request.dart';
 import '../models/api_response.dart';
@@ -32,12 +33,27 @@ class HttpClientService {
   HttpClientService()
       : _dio = Dio(
           BaseOptions(
-            connectTimeout: const Duration(seconds: 15),
-            receiveTimeout: const Duration(seconds: 30),
+            connectTimeout: const Duration(minutes: 10),
+            receiveTimeout: null, // 关键：null 代表无超时限制，长请求保持与接口连接不断开
+            sendTimeout: null,    // 不限发送数据超时
             validateStatus: (status) => true, // 允许所有状态码（包括 4xx/5xx）正常返回供调试
             responseType: ResponseType.plain,
+            persistentConnection: true, // HTTP 保持长连接
           ),
-        );
+        ) {
+    // 显式替换底层的 httpClientAdapter，注入长连接与高并发连接池配置
+    _dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.idleTimeout = const Duration(hours: 2); // 延长空闲长连接保活时间至 2 小时
+        client.connectionTimeout = const Duration(minutes: 10);
+        client.maxConnectionsPerHost = 100; // 提高单域名最大长连接并发与连接池复用上限
+        client.autoUncompress = true;
+        client.badCertificateCallback = (cert, host, port) => true; // 允许测试环境自签名证书
+        return client;
+      },
+    );
+  }
 
   /// 执行完整的请求生命周期流水线（支持父级集合与目录级联继承）
   Future<ExecutionResult> executeRequest({
@@ -167,6 +183,14 @@ class HttpClientService {
           VariableResolver.interpolate(h.value, envVars);
     }
 
+    // 默认保持持久长连接 Keep-Alive 请求头（若用户未显式覆盖 Connection / Keep-Alive 头）
+    if (!headers.keys.any((k) => k.toLowerCase() == 'connection')) {
+      headers['Connection'] = 'keep-alive';
+    }
+    if (!headers.keys.any((k) => k.toLowerCase() == 'keep-alive')) {
+      headers['Keep-Alive'] = 'timeout=3600, max=1000';
+    }
+
     // 6. 解析 Request Body
     dynamic bodyData;
     String finalResolvedBody = '';
@@ -256,6 +280,9 @@ class HttpClientService {
         options: Options(
           method: request.method.nameString,
           headers: headers,
+          persistentConnection: true, // 启用长连接
+          receiveTimeout: null,       // 长请求不限制接收超时，保持接口连接不断开
+          sendTimeout: null,          // 不限制发送数据超时
         ),
         cancelToken: cancelToken,
       );
@@ -329,7 +356,18 @@ class HttpClientService {
     } on DioException catch (e) {
       final durationMs =
           DateTime.now().difference(startTime).inMilliseconds;
-      final errorMsg = e.message ?? e.toString();
+      String errorMsg = e.message ?? e.toString();
+      if (e.type == DioExceptionType.cancel) {
+        errorMsg = '请求已被用户取消';
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        errorMsg = '连接超时 (Connection Timeout)，无法连接到目标服务器';
+      } else if (e.type == DioExceptionType.sendTimeout) {
+        errorMsg = '发送数据超时 (Send Timeout)';
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        errorMsg = '响应接收超时 (Receive Timeout)';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMsg = '长请求连接断开或网络异常 (Connection Error): $errorMsg';
+      }
       allConsoleLogs.add('[NETWORK_ERROR] $errorMsg');
 
       apiResponse = ApiResponse.error(

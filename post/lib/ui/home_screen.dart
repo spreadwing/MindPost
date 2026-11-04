@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:dio/dio.dart';
 
 import '../models/workspace.dart';
 import '../models/api_collection.dart';
@@ -111,6 +112,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // 请求执行状态与响应映射
   final Map<String, bool> _requestLoading = {};
   final Map<String, ApiResponse?> _responses = {};
+  final Map<String, CancelToken> _requestCancelTokens = {};
+  final Map<String, DateTime> _requestStartTimes = {};
+  Timer? _requestDurationTimer;
+
+  void _startDurationTimerIfNeeded() {
+    if (_requestDurationTimer != null && _requestDurationTimer!.isActive) return;
+    _requestDurationTimer =
+        Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        _requestDurationTimer = null;
+        return;
+      }
+      final hasActiveRequest =
+          _requestLoading.values.any((loading) => loading);
+      if (hasActiveRequest) {
+        setState(() {});
+      } else {
+        timer.cancel();
+        _requestDurationTimer = null;
+      }
+    });
+  }
+
+  void _stopDurationTimerIfNoActiveRequests() {
+    final hasActiveRequest =
+        _requestLoading.values.any((loading) => loading);
+    if (!hasActiveRequest) {
+      _requestDurationTimer?.cancel();
+      _requestDurationTimer = null;
+    }
+  }
+
+  String _getCurrentRequestDurationText(String requestId) {
+    final startTime = _requestStartTimes[requestId];
+    if (startTime == null) return '0 ms';
+    final elapsedMs = DateTime.now().difference(startTime).inMilliseconds;
+    if (elapsedMs < 1000) {
+      return '$elapsedMs ms';
+    } else {
+      return '${(elapsedMs / 1000).toStringAsFixed(1)} s';
+    }
+  }
+
+  void _cancelRequest(String requestId) {
+    final token = _requestCancelTokens[requestId];
+    if (token != null && !token.isCancelled) {
+      token.cancel('用户已取消请求');
+    }
+  }
 
   // 当前请求编辑器的控制器 (Body 与前后置脚本均采用语法高亮)
   final TextEditingController _urlController = TextEditingController();
@@ -464,6 +515,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _requestDurationTimer?.cancel();
     _persistWorkbenchDebounceTimer?.cancel();
     _persistWorkbenchStateNow();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
@@ -877,49 +929,63 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     req.postRequestScript = _postScriptController.text;
 
     final calledTime = DateTime.now();
+    final cancelToken = CancelToken();
+    _requestCancelTokens[req.id] = cancelToken;
+    _requestStartTimes[req.id] = calledTime;
+
     setState(() {
       _requestLoading[req.id] = true;
+      _responses[req.id] = null; // 关键：立即清空上次响应，不在请求中保持旧状态
+      _showResponseSearch = false;
+      _responseSearchQuery = '';
       _recordApiHistory(req, null, calledAt: calledTime);
     });
+    _startDurationTimerIfNeeded();
     unawaited(_storageService.saveWorkspace(_workspace));
 
     try {
       final execResult = await _httpClientService.executeRequest(
         request: req,
         workspace: _workspace,
+        cancelToken: cancelToken,
       );
 
-      setState(() {
-        _responses[req.id] = execResult.response;
-        _recordApiHistory(
-          req,
-          execResult.response,
-          calledAt: calledTime,
-        );
+      if (mounted) {
+        setState(() {
+          _responses[req.id] = execResult.response;
+          _recordApiHistory(
+            req,
+            execResult.response,
+            calledAt: calledTime,
+          );
 
-        // 如果脚本修改了环境变量，回写
-        if (execResult.updatedEnvironmentVariables.isNotEmpty &&
-            _workspace.activeEnvironment != null) {
-          final env = _workspace.activeEnvironment!;
-          for (final entry in execResult.updatedEnvironmentVariables.entries) {
-            final existing = env.variables.cast<VariableItem?>().firstWhere(
-                  (v) => v?.key == entry.key,
-                  orElse: () => null,
-                );
-            if (existing != null) {
-              existing.value = entry.value;
-            } else {
-              env.variables.add(VariableItem(key: entry.key, value: entry.value));
+          // 如果脚本修改了环境变量，回写
+          if (execResult.updatedEnvironmentVariables.isNotEmpty &&
+              _workspace.activeEnvironment != null) {
+            final env = _workspace.activeEnvironment!;
+            for (final entry in execResult.updatedEnvironmentVariables.entries) {
+              final existing = env.variables.cast<VariableItem?>().firstWhere(
+                    (v) => v?.key == entry.key,
+                    orElse: () => null,
+                  );
+              if (existing != null) {
+                existing.value = entry.value;
+              } else {
+                env.variables.add(VariableItem(key: entry.key, value: entry.value));
+              }
             }
           }
-        }
-      });
+        });
+      }
       unawaited(_storageService.saveWorkspace(_workspace));
     } finally {
+      _requestCancelTokens.remove(req.id);
+      _requestStartTimes.remove(req.id);
       if (mounted) {
         setState(() {
           _requestLoading[req.id] = false;
         });
+        _stopDurationTimerIfNoActiveRequests();
       }
     }
   }
@@ -4703,6 +4769,233 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  /// 响应区初始空状态视图（尚未发起请求）
+  Widget _buildResponseEmptyView() {
+    return Center(
+      child: SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      color: const Color(0xFFDBEAFE),
+                      width: 1.0),
+                ),
+                child: const Icon(Icons.bolt_rounded,
+                    size: 20, color: Color(0xFF2563EB)),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                '准备就绪',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '点击上方【发送】执行请求，在此查看响应报文、响应头与断言测试结果',
+                style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 响应区正在请求中状态视图（体现正在请求与长请求保持连接，绝不显示上次请求旧状态）
+  Widget _buildResponseLoadingView(ApiRequest req) {
+    final durationText = _getCurrentRequestDurationText(req.id);
+
+    return Column(
+      children: [
+        // 响应状态栏 (体现正在请求状态)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8FAFC),
+            border: Border(
+              bottom: BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+          ),
+          child: Row(
+            children: [
+              const RequestPendingBadge(label: '正在请求'),
+              const SizedBox(width: 8),
+              // 实时动态耗时（等宽数字防抖动）
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  border: Border.all(color: const Color(0xFFFDE68A), width: 0.8),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.speed_rounded,
+                        size: 13, color: Color(0xFFD97706)),
+                    const SizedBox(width: 4),
+                    Text(
+                      durationText,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFB45309),
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // 长连接保持中标识
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDF4),
+                  border: Border.all(color: const Color(0xFFBBF7D0), width: 0.8),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.all_inclusive_rounded,
+                        size: 13, color: Color(0xFF16A34A)),
+                    SizedBox(width: 4),
+                    Text(
+                      'Keep-Alive',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF15803D),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              // 取消请求轻量按钮
+              InkWell(
+                onTap: () => _cancelRequest(req.id),
+                borderRadius: BorderRadius.circular(5),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    border: Border.all(color: const Color(0xFFFECACA), width: 0.8),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.close_rounded, size: 13, color: Color(0xFFDC2626)),
+                      SizedBox(width: 4),
+                      Text(
+                        '取消请求',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFDC2626),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // 主体极简加载状态（与准备就绪空状态保持统一视觉层级）
+        Expanded(
+          child: Center(
+            child: SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFEFF6FF),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.8,
+                              color: Color(0xFF2563EB),
+                              backgroundColor: Color(0xFFDBEAFE),
+                            ),
+                          ),
+                          const Icon(
+                            Icons.bolt_rounded,
+                            size: 18,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      '正在等待服务端响应...',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text.rich(
+                      TextSpan(
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: 12,
+                        ),
+                        children: [
+                          const TextSpan(text: '已等待 '),
+                          TextSpan(
+                            text: durationText,
+                            style: const TextStyle(
+                              color: Color(0xFF2563EB),
+                              fontWeight: FontWeight.w600,
+                              fontFeatures: [FontFeature.tabularFigures()],
+                            ),
+                          ),
+                          const TextSpan(text: ' · 持久长连接保持中，正在接收响应报文'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // 3. 空白工作区状态
   Widget _buildEmptyWorkspace() {
     return Center(
@@ -5112,23 +5405,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 8),
 
-                  // 发送按钮 (独立主操作按钮，高辨识度与充足点击热区)
+                  // 发送 / 取消 按钮 (独立主操作按钮，长请求支持一键中止)
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(8),
-                      onTap: isLoading ? null : _sendCurrentRequest,
+                      onTap: isLoading
+                          ? () => _cancelRequest(req.id)
+                          : _sendCurrentRequest,
                       child: Container(
                         height: 40,
                         padding: const EdgeInsets.symmetric(horizontal: 18),
                         decoration: BoxDecoration(
                           color: isLoading
-                              ? const Color(0xFF93C5FD)
+                              ? const Color(0xFFEF4444)
                               : const Color(0xFF2563EB),
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                              color: (isLoading
+                                      ? const Color(0xFFEF4444)
+                                      : const Color(0xFF2563EB))
+                                  .withValues(alpha: 0.25),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -5138,20 +5436,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (isLoading)
-                              const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
+                              const Icon(Icons.close_rounded,
+                                  size: 15, color: Colors.white)
                             else
                               const Icon(Icons.send_rounded,
                                   size: 14, color: Colors.white),
                             const SizedBox(width: 6),
                             Text(
-                              isLoading ? '发送中...' : '发送',
+                              isLoading ? '取消请求' : '发送',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12.5,
@@ -5954,50 +6246,11 @@ pm.test("Status code is 200", function () {
                   // 下半部分：响应展示视图区域
                   SizedBox(
                     height: bottomHeight,
-                    child: response == null
-                        ? Center(
-                            child: SingleChildScrollView(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEFF6FF),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: const Color(0xFFDBEAFE),
-                                            width: 1.0),
-                                      ),
-                                      child: const Icon(Icons.bolt_rounded,
-                                          size: 20, color: Color(0xFF2563EB)),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    const Text(
-                                      '准备就绪',
-                                      style: TextStyle(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF0F172A),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '点击上方【发送】执行请求，在此查看响应报文、响应头与断言测试结果',
-                                      style: TextStyle(
-                                          color: Colors.grey.shade500,
-                                          fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )
-                        : Column(
+                    child: isLoading
+                        ? _buildResponseLoadingView(req)
+                        : response == null
+                            ? _buildResponseEmptyView()
+                            : Column(
                             children: [
                               // 响应状态栏
                               Container(
