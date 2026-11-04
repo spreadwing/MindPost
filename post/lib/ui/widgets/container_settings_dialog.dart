@@ -151,31 +151,6 @@ class _ContainerSettingsDialogState extends State<ContainerSettingsDialog>
                             isDense: true,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                                color: const Color(0xFF3B82F6)
-                                    .withValues(alpha: 0.2)),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.info_outline,
-                                  color: Color(0xFF3B82F6), size: 18),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  '级联继承提示：在当前$titleType配置的公共 Headers、前置脚本和后置断言，将对本$titleType下所有下级目录和 API 自动生效并自顶向下递归继承。',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Color(0xFF1E40AF)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -200,13 +175,8 @@ class _ContainerSettingsDialogState extends State<ContainerSettingsDialog>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text(
-                              '在此配置当前$titleType下所有请求发送前执行的公共 JavaScript 脚本',
-                              style: const TextStyle(
-                                  fontSize: 11, color: Colors.grey),
-                            ),
-                            const Spacer(),
                             ActionChip(
                               label: const Text('插入公共 Token 校验',
                                   style: TextStyle(fontSize: 10)),
@@ -246,13 +216,8 @@ console.log("执行【${widget.container.name}】公共前置处理");
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text(
-                              '在此配置当前$titleType下所有请求返回后执行的公共测试与断言',
-                              style: const TextStyle(
-                                  fontSize: 11, color: Colors.grey),
-                            ),
-                            const Spacer(),
                             ActionChip(
                               label: const Text('插入响应耗时断言',
                                   style: TextStyle(fontSize: 10)),

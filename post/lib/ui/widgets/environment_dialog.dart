@@ -217,15 +217,6 @@ class _EnvironmentDialogState extends State<EnvironmentDialog> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      '枚举列表 · 下拉菜单将显示「枚举名称」，实际请求使用「枚举值」',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF64748B),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
 
                     // 枚举项编辑表格
                     Container(
@@ -515,11 +506,6 @@ class _EnvironmentDialogState extends State<EnvironmentDialog> {
                         style: TextStyle(
                             fontSize: 12.5, fontWeight: FontWeight.w600),
                       ),
-                      subtitle: const Text(
-                        '开启后可在软件主界面上方直接按枚举名称下拉切换',
-                        style:
-                            TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
-                      ),
                       value: item.showInHeader,
                       onChanged: (val) {
                         setModalState(() {
@@ -693,14 +679,6 @@ class _EnvironmentDialogState extends State<EnvironmentDialog> {
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      '支持拖拽或上下箭头调整顺序，枚举变量按名称下拉切换',
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        color: Color(0xFF64748B),
                                       ),
                                     ),
                                     const Spacer(),

@@ -196,50 +196,37 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              widget.container.name,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                      Flexible(
+                        child: Text(
+                          widget.container.name,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0F172A),
                           ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                  color: const Color(0xFFBFDBFE), width: 0.8),
-                            ),
-                            child: const Text(
-                              '目录公共配置',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF2563EB),
-                              ),
-                            ),
-                          ),
-                        ],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        '在此配置的目录参数、公共 Headers 和前后置脚本，将自顶向下自动继承给其下所有目录与 API 请求',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          color: Color(0xFF64748B),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                              color: const Color(0xFFBFDBFE), width: 0.8),
+                        ),
+                        child: const Text(
+                          '目录公共配置',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2563EB),
+                          ),
                         ),
                       ),
                     ],
@@ -338,17 +325,8 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              const Icon(Icons.info_outline_rounded,
-                  size: 15, color: Color(0xFF2563EB)),
-              const SizedBox(width: 6),
-              const Expanded(
-                child: Text(
-                  '在此配置的公共 Header 会自动附加到该目录下的所有 API 请求中。若下级目录或单接口存在同名 Header，则以子级为准覆盖。',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF475569)),
-                ),
-              ),
-              const SizedBox(width: 12),
               OutlinedButton.icon(
                 onPressed: () {
                   setState(() {
@@ -402,17 +380,8 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              const Icon(Icons.data_object_rounded,
-                  size: 15, color: Color(0xFF2563EB)),
-              const SizedBox(width: 6),
-              const Expanded(
-                child: Text(
-                  '定义当前目录作用域内的公共参数变量，下属接口可在 URL、Params、Header 或 Body 中通过 {{变量名}} 直接引用。',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF475569)),
-                ),
-              ),
-              const SizedBox(width: 12),
               OutlinedButton.icon(
                 onPressed: () {
                   setState(() {
@@ -578,7 +547,7 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
                                 size: 15, color: Color(0xFF94A3B8)),
                             SizedBox(width: 6),
                             Text(
-                              '暂无目录级公共参数，点击下方「+ 添加一行目录参数」直接在表格中录入',
+                              '暂无目录参数',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFF94A3B8),
@@ -820,20 +789,6 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.bolt_rounded,
-                  size: 16, color: Color(0xFFF59E0B)),
-              const SizedBox(width: 6),
-              const Expanded(
-                child: Text(
-                  '在执行该目录下的任何 API 请求之前优先运行。可在此获取 Token、生成签名或注入公共请求头。',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF475569)),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
@@ -919,20 +874,6 @@ class _ContainerSettingsViewState extends State<ContainerSettingsView>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.verified_outlined,
-                  size: 16, color: Color(0xFF10B981)),
-              const SizedBox(width: 6),
-              const Expanded(
-                child: Text(
-                  '在该目录下的任何 API 收到响应后统一运行。可编写通用 HTTP 状态码断言、耗时检查或提取公共 Token。',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF475569)),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,

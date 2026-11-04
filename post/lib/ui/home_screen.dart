@@ -1606,22 +1606,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       {
         'icon': Icons.palette_outlined,
         'title': '外观与主题',
-        'subtitle': '侧边栏配色方案与界面视图偏好',
       },
       {
         'icon': Icons.view_sidebar_outlined,
         'title': '工具栏与历史',
-        'subtitle': '配置右侧工具栏显示项与左侧历史调用记录条数',
       },
       {
         'icon': Icons.auto_awesome_outlined,
         'title': 'AI 助手配置',
-        'subtitle': '配置大模型连接参数，未配置时主页面自动隐藏 AI 入口',
       },
       {
         'icon': Icons.cloud_sync_outlined,
         'title': 'S3 云端同步',
-        'subtitle': '通过兼容 S3 的对象存储多端同步工作区',
       },
     ];
 
@@ -1660,7 +1656,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(18, 20, 16, 16),
+                            padding: const EdgeInsets.fromLTRB(18, 18, 16, 16),
                             child: Row(
                               children: [
                                 Container(
@@ -1678,27 +1674,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 ),
                                 const SizedBox(width: 10),
                                 const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '设置',
-                                        style: TextStyle(
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF0F172A),
-                                        ),
-                                      ),
-                                      SizedBox(height: 1),
-                                      Text(
-                                        'MindPost 配置中心',
-                                        style: TextStyle(
-                                          fontSize: 10.5,
-                                          color: Color(0xFF64748B),
-                                        ),
-                                      ),
-                                    ],
+                                  child: Text(
+                                    '设置',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0F172A),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1833,7 +1815,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         children: [
                           // 右侧顶部标题栏
                           Container(
-                            padding: const EdgeInsets.fromLTRB(24, 16, 16, 14),
+                            padding: const EdgeInsets.fromLTRB(24, 14, 16, 14),
                             decoration: const BoxDecoration(
                               color: Colors.white,
                               border: Border(
@@ -1843,27 +1825,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        currentNav['title'] as String,
-                                        style: const TextStyle(
-                                          fontSize: 15.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF0F172A),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        currentNav['subtitle'] as String,
-                                        style: const TextStyle(
-                                          fontSize: 11.5,
-                                          color: Color(0xFF64748B),
-                                        ),
-                                      ),
-                                    ],
+                                  child: Text(
+                                    currentNav['title'] as String,
+                                    style: const TextStyle(
+                                      fontSize: 15.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0F172A),
+                                    ),
                                   ),
                                 ),
                                 IconButton(
@@ -1930,21 +1898,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               ),
                             ),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                const Icon(
-                                  Icons.check_circle_outline_rounded,
-                                  size: 15,
-                                  color: Color(0xFF10B981),
-                                ),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  '所有更改将自动保存到本地工作区',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                                const Spacer(),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF2563EB),
@@ -2056,15 +2011,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             color: Color(0xFF0F172A),
           ),
         ),
-        const SizedBox(height: 4),
-        const Text(
-          '为左侧接口目录树选择独立的视觉底色，增强与右侧纯白工作区的边界层次感，点击任意卡片即可实时生效',
-          style: TextStyle(
-            fontSize: 12,
-            color: Color(0xFF64748B),
-          ),
-        ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         Wrap(
           spacing: 12,
           runSpacing: 12,
@@ -2092,14 +2039,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             color: Color(0xFF0F172A),
           ),
         ),
-        const SizedBox(height: 4),
-        const Text(
-          '自定义左侧目录树中文件夹的强调配色与图标视觉形态，切换后实时响应生效',
-          style: TextStyle(
-            fontSize: 12,
-            color: Color(0xFF64748B),
-          ),
-        ),
         const SizedBox(height: 12),
         _buildFolderAppearanceSettingsCard(setModalState),
         const SizedBox(height: 22),
@@ -2115,7 +2054,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _buildSettingSwitchCard(
           icon: Icons.link_rounded,
           title: '显示解析后请求目标栏',
-          subtitle: '在请求地址输入框下方实时展示环境变量替换后的完整请求地址',
           value: _workspace.showUrlPreviewBar,
           onChanged: (val) {
             setModalState(() {
@@ -2129,7 +2067,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _buildSettingSwitchCard(
           icon: Icons.archive_outlined,
           title: '关闭主窗口时缩小到系统托盘',
-          subtitle: '开启后点击窗口右上角关闭按钮将最小化常驻在系统托盘，不退出后台任务与调试进程',
           value: _workspace.minimizeToTrayOnClose,
           onChanged: (val) {
             setModalState(() {
@@ -2641,16 +2578,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ],
             ),
-            const SizedBox(height: 2),
-            Text(
-              palette.subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Color(0xFF64748B),
-              ),
-            ),
           ],
         ),
       ),
@@ -2667,14 +2594,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       {
         'id': 'curl',
         'title': 'cURL 代码生成',
-        'subtitle': '在右侧停靠面板实时查看与复制当前请求的 cURL 命令',
         'icon': Icons.terminal_rounded,
         'color': const Color(0xFFD97706),
       },
       {
         'id': 'ai',
         'title': 'AI 智能助手',
-        'subtitle': '在右侧停靠栏显示 AI 入口，需同时在 AI 助手配置中填写有效参数后生效',
         'icon': Icons.auto_awesome_rounded,
         'color': const Color(0xFF7C3AED),
       },
@@ -2683,21 +2608,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '工具栏与历史记录',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
-          ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          '配置左侧历史调用列表展示条数，以及定制右侧工具边侧栏显示的功能入口。',
-          style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
-        ),
-        const SizedBox(height: 20),
-
         // 卡片 1：左侧历史记录数量设置
         Container(
           padding: const EdgeInsets.all(18),
@@ -2743,11 +2653,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       label: const Text('清空历史记录', style: TextStyle(fontSize: 12)),
                     ),
                 ],
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                '左侧历史面板按接口最新调用时间倒序排列，同一接口多次调用仅保留最新一条记录，默认显示 10 条。',
-                style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
               ),
               const SizedBox(height: 14),
               Row(
@@ -2858,11 +2763,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
-              const Text(
-                '勾选需要在主界面右侧工具栏常驻显示的工具入口，取消勾选后将立即从右侧栏隐藏。',
-                style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
-              ),
               const SizedBox(height: 12),
               ...availableTools.map((tool) {
                 final id = tool['id'] as String;
@@ -2897,50 +2797,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  tool['title'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1E293B),
-                                  ),
-                                ),
-                                if (isAiUnconfigured) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 1.5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFEF3C7),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: const Text(
-                                      '未配置 AI，主页暂不显示',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFFB45309),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                            const SizedBox(height: 2),
                             Text(
-                              tool['subtitle'] as String,
+                              tool['title'] as String,
                               style: const TextStyle(
-                                fontSize: 11.5,
-                                color: Color(0xFF64748B),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1E293B),
                               ),
                             ),
+                            if (isAiUnconfigured) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 1.5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF3C7),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  '未配置 AI，主页暂不显示',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFB45309),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -3013,23 +2900,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Row(
           children: [
             const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'AI 助手配置',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '配置大模型接口地址与密钥后，右侧工具栏将自动开启 AI 助手入口；未配置时主页面自动隐藏 AI 入口。',
-                    style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
-                  ),
-                ],
+              child: Text(
+                'AI 助手配置',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                ),
               ),
             ),
             Container(
@@ -3073,7 +2950,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 14),
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
@@ -3261,38 +3138,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 顶部同步状态概览条
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF).withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFBFDBFE)),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.cloud_done_outlined,
-                size: 18,
-                color: Color(0xFF2563EB),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  s3.lastSyncTime != null && s3.lastSyncTime!.isNotEmpty
-                      ? '最近一次云端同步时间：${s3.lastSyncTime}'
-                      : '支持 AWS S3、MinIO、阿里云 OSS、腾讯云 COS、Cloudflare R2 等兼容对象存储',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF1E40AF),
-                    fontWeight: FontWeight.w500,
+        // 顶部同步状态概览条（仅当存在同步记录时展示）
+        if (s3.lastSyncTime != null && s3.lastSyncTime!.isNotEmpty) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF).withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.cloud_done_outlined,
+                  size: 18,
+                  color: Color(0xFF2563EB),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '最近一次云端同步时间：${s3.lastSyncTime}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF1E40AF),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
+        ],
 
         // S3 连接参数表单卡片
         Container(
@@ -3563,7 +3440,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildSettingSwitchCard({
     required IconData icon,
     required String title,
-    required String subtitle,
+    String? subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
@@ -3599,14 +3476,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: Color(0xFF0F172A),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color: Color(0xFF64748B),
+                if (subtitle != null && subtitle.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: Color(0xFF64748B),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -4216,15 +4095,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             color: subColor,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '发送接口请求后，最新调用的接口将排在列表最上方',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: subColor.withValues(alpha: 0.8),
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -4820,13 +4690,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   color: Color(0xFF0F172A),
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                '点击上方【发送】执行请求，在此查看响应报文、响应头与断言测试结果',
-                style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 12),
-              ),
             ],
           ),
         ),
@@ -4985,30 +4848,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         color: Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    ValueListenableBuilder<int>(
-                      valueListenable: _durationTickNotifier,
-                      builder: (context, _, _) => Text.rich(
-                        TextSpan(
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 12,
-                          ),
-                          children: [
-                            const TextSpan(text: '已等待 '),
-                            TextSpan(
-                              text: _getCurrentRequestDurationText(req.id),
-                              style: const TextStyle(
-                                color: Color(0xFF2563EB),
-                                fontWeight: FontWeight.w600,
-                                fontFeatures: [FontFeature.tabularFigures()],
-                              ),
-                            ),
-                            const TextSpan(text: ' · 持久长连接保持中，正在接收响应报文'),
-                          ],
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -5046,12 +4885,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF0F172A),
               ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              '从左侧资源树中选择已有接口，或点击下方按钮新建快捷请求标签页进行调试与验证。',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B), height: 1.5),
             ),
             const SizedBox(height: 18),
             ElevatedButton.icon(
@@ -6084,13 +5917,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  const Text(
-                                    '沙箱 JavaScript 脚本，在请求发送前执行，支持 pm.environment 与 CryptoJS 签名',
-                                    style: TextStyle(
-                                        fontSize: 11, color: Colors.grey),
-                                  ),
-                                  const Spacer(),
                                   ActionChip(
                                     label: const Text('插入 HMAC 签名示例',
                                         style: TextStyle(fontSize: 10)),
@@ -6177,13 +6005,8 @@ console.log("签名计算完成: " + sign);
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  const Text(
-                                    '后置测试与断言脚本，支持 pm.test 与 pm.response',
-                                    style: TextStyle(
-                                        fontSize: 11, color: Colors.grey),
-                                  ),
-                                  const Spacer(),
                                   ActionChip(
                                     label: const Text('插入 200 断言',
                                         style: TextStyle(fontSize: 10)),

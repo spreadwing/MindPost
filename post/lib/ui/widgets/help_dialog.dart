@@ -129,26 +129,13 @@ class _HelpDialogState extends State<HelpDialog> {
                         ),
                         const SizedBox(width: 10),
                         const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '帮助中心',
-                                style: TextStyle(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0F172A),
-                                ),
-                              ),
-                              SizedBox(height: 1),
-                              Text(
-                                '文档与操作速查',
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  color: Color(0xFF64748B),
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            '帮助中心',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
                           ),
                         ),
                       ],
@@ -229,7 +216,7 @@ class _HelpDialogState extends State<HelpDialog> {
                 children: [
                   // 顶部标题栏
                   Container(
-                    height: 56,
+                    height: 52,
                     padding: const EdgeInsets.symmetric(horizontal: 22),
                     decoration: const BoxDecoration(
                       border: Border(
@@ -239,27 +226,13 @@ class _HelpDialogState extends State<HelpDialog> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                currentNav['title'] as String,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0F172A),
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                currentNav['subtitle'] as String,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF64748B),
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            currentNav['title'] as String,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
                           ),
                         ),
                         IconButton(

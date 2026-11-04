@@ -204,7 +204,7 @@ class KeyValueEditor extends StatelessWidget {
                       size: 15, color: Color(0xFF94A3B8)),
                   const SizedBox(width: 6),
                   Text(
-                    '暂无${isFormData ? "表单字段" : "参数"}，点击下方「+ 添加一行」直接在表格中录入',
+                    '暂无${isFormData ? "表单字段" : "参数"}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF94A3B8),
