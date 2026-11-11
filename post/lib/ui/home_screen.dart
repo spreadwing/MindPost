@@ -226,12 +226,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       httpClientService: _httpClientService,
       workspace: _workspace,
       onWorkspaceUpdated: (updated) {
+        if (!mounted) return;
         setState(() {
           _workspace = updated;
+          _removeStaleTabs();
         });
         _storageService.saveWorkspace(_workspace);
+        _schedulePersistWorkbenchState();
       },
       onMcpLog: (_) {
+        if (!mounted) return;
         setState(() {});
       },
     );

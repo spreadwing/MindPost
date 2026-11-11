@@ -8,6 +8,7 @@ import '../models/api_response.dart';
 import '../models/workspace.dart';
 import '../models/api_collection.dart';
 import '../models/api_container.dart';
+import '../models/environment.dart';
 import '../engine/variable_resolver.dart';
 import '../engine/script_engine.dart';
 
@@ -60,6 +61,7 @@ class HttpClientService {
     required ApiRequest request,
     required Workspace workspace,
     ApiCollection? collection,
+    String? environmentIdOverride,
     CancelToken? cancelToken,
   }) async {
     final startTime = DateTime.now();
@@ -83,6 +85,7 @@ class HttpClientService {
       workspace: workspace,
       collection: collection,
       parentContainers: parentChain,
+      environmentIdOverride: environmentIdOverride,
     );
     final globalVars = {
       for (final g in workspace.globalVariables)
@@ -130,7 +133,17 @@ class HttpClientService {
     }
 
     // 3. 解析最终 URL
-    final activeBaseUrl = workspace.activeEnvironment?.baseUrl;
+    final effectiveEnvId = (environmentIdOverride != null &&
+            environmentIdOverride.trim().isNotEmpty)
+        ? environmentIdOverride.trim()
+        : workspace.activeEnvironmentId;
+    final effectiveEnv = effectiveEnvId == null
+        ? null
+        : workspace.environments.cast<Environment?>().firstWhere(
+              (e) => e?.id == effectiveEnvId,
+              orElse: () => null,
+            );
+    final activeBaseUrl = effectiveEnv?.baseUrl;
     String finalUrl = VariableResolver.resolveUrl(
       rawUrl: request.url,
       variables: envVars,

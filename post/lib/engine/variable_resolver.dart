@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:uuid/uuid.dart';
 import '../models/api_collection.dart';
 import '../models/api_container.dart';
+import '../models/environment.dart';
 import '../models/workspace.dart';
 
 class VariableResolver {
@@ -11,6 +12,7 @@ class VariableResolver {
     ApiCollection? collection,
     List<ApiContainer>? parentContainers,
     Map<String, String>? requestVariables,
+    String? environmentIdOverride,
   }) {
     final map = <String, String>{};
 
@@ -21,8 +23,17 @@ class VariableResolver {
       }
     }
 
-    // 2. 当前激活环境中的变量
-    final activeEnv = workspace.activeEnvironment;
+    // 2. 当前激活或临时绑定环境中的变量
+    final targetEnvId = (environmentIdOverride != null &&
+            environmentIdOverride.trim().isNotEmpty)
+        ? environmentIdOverride.trim()
+        : workspace.activeEnvironmentId;
+    final activeEnv = targetEnvId == null
+        ? null
+        : workspace.environments.cast<Environment?>().firstWhere(
+              (e) => e?.id == targetEnvId,
+              orElse: () => null,
+            );
     if (activeEnv != null) {
       if (activeEnv.baseUrl.isNotEmpty) {
         map['baseUrl'] = activeEnv.baseUrl;

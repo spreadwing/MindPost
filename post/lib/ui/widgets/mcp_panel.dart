@@ -30,8 +30,14 @@ class _McpPanelState extends State<McpPanel> {
     'get_api_detail': '{"request_id": "req-get-user"}',
     'execute_api_request':
         '{"url": "/get", "method": "GET", "headers": {"X-Agent": "MCP"}}',
+    'upsert_api_request':
+        '{"name": "示例接口", "method": "POST", "url": "/api/demo", "folder_path": "测试目录"}',
+    'manage_api_request':
+        '{"action": "duplicate", "request_id": "req-get-user"}',
+    'manage_containers':
+        '{"action": "get_detail", "container_id": "col-demo"}',
     'manage_environment_variables': '{"action": "get_variables"}',
-    'get_execution_history_logs': '{"limit": 5}',
+    'get_execution_history_logs': '{"log_type": "all", "limit": 5}',
   };
 
   @override
@@ -243,24 +249,36 @@ class _McpPanelState extends State<McpPanel> {
                           items: const [
                             DropdownMenuItem(
                               value: 'list_collections_and_apis',
-                              child: Text('list_collections_and_apis · 列出集合与接口'),
+                              child: Text('list_collections_and_apis · 列出集合与接口树'),
                             ),
                             DropdownMenuItem(
                               value: 'get_api_detail',
-                              child: Text('get_api_detail · 获取接口详情'),
+                              child: Text('get_api_detail · 获取接口与继承详情'),
                             ),
                             DropdownMenuItem(
                               value: 'execute_api_request',
                               child: Text('execute_api_request · 调度执行请求'),
                             ),
                             DropdownMenuItem(
+                              value: 'upsert_api_request',
+                              child: Text('upsert_api_request · 新增或局部更新接口'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'manage_api_request',
+                              child: Text('manage_api_request · 删除/移动/复制接口'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'manage_containers',
+                              child: Text('manage_containers · 集合/目录与公共配置'),
+                            ),
+                            DropdownMenuItem(
                               value: 'manage_environment_variables',
                               child:
-                                  Text('manage_environment_variables · 管理环境变量'),
+                                  Text('manage_environment_variables · 环境与全局变量'),
                             ),
                             DropdownMenuItem(
                               value: 'get_execution_history_logs',
-                              child: Text('get_execution_history_logs · 获取执行日志'),
+                              child: Text('get_execution_history_logs · 历史与审计日志'),
                             ),
                           ],
                           onChanged: (val) {
